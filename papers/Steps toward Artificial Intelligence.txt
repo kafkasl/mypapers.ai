@@ -1,0 +1,3303 @@
+8PROCEEDINGS OF THE IRE
+Steps Toward Artificial Intelligence*
+MARVIN MINSKYt, MEMBER, IRE
+The work toward attaining "artificial intelligence" is the center of considerable computer research, design,
+and application. The field is in its starting transient, characterized by many varied and independent efforts.
+Marvin Minsky has been requested to draw this work together into a coherent summary, supplement it with
+appropriate explanatory or theoretical noncomputer information, and introduce his assessment of the state-of-
+the-art. This paper emphasizes the class of activities in which a general purpose computer, complete with a
+library of basic programs, is further programmed to perform operations leading to ever higher-level information
+processing functions such as learning and problem solving. This informative article will be of real interest to
+both the general PROCEEDINGS reader and the computer specialist.
+The Guest Editor
+Summary-The problems of heuristic programming-of making
+computers solve really difficult problems-are divided into five main
+areas:
+Search,
+Pattern-Recognition,
+Learning,
+Planning,
+and
+Induction.
+A computer can do, in a sense, only what it is told to do. But even
+when we do not know how to solve a certain problem, we may pro-
+gram a machine (computer) to Search through some large space of
+solution attempts. Unfortunately, this usually leads to an enormously
+inefficient process. With Pattern-Recognition techniques, efficiency
+can often be improved, by restricting the application of the machine's
+methods
+to appropriate problems. Pattern-Recognition,
+together
+with Learning, can be used to exploit generalizations based on ac-
+cumulated experience, further reducing search. By analyzing the
+situation, using Planning methods, we may obtain a fundamental
+improvement by replacing the given search with a much smaller,
+more appropriate exploration. To manage broad classes of problems,
+machines will need to construct models of their environments, using
+some scheme for Induction.
+Wherever appropriate, the discussion is supported by extensive
+citation of the literature and by descriptions of a few of the most
+successful heuristic (problem-solving) programs constructed to date.
+INTRODUCTION
+A
+VISITOR to our planet might be puzzled about
+the role of computers in our technology. On the
+one
+hand, he would
+read and
+hear all about
+wonderful "nmechaniical brains" baffling their creators
+with prodigious initellectual performance. And he (or it)
+would be warned that these machines must be
+re-
+strained, lest they overwhelm us by might, persuasion,
+or even by the revelation of truths too terrible to be
+borne. On the other hand, our visitor would find the
+machines being denounced, on all sides, for their slavish
+obedience, unimaginative
+literal interpretations, and
+incapacity for innovation or initiative; in short,
+for
+their inhuman dullness.
+Our visitor might remain puzzled if he set out to find,
+and judge for himself, these monsters. For he would
+* Received by the IRE, October 24, 1960. The author's work
+summarized here
+which was done at Lincoln Lab., a center for re-
+search operated by M.I.T. at Lexington, Mass., with the joint sup-
+port of the U. S. Army, Navy, and Air Force under Air Force Con-
+tract AF 19(604)-5200; and at the Res. Lab. of Electronics, M.I.T.,
+Cambridge, Mass., which is supported in part by the U. S. Army
+Signal Corps, the Air Force Office of Scientific Res., and the ONR-
+is based on earlier work done by the author as a Junior Fellow of the
+Society of Fellows, Harvard Univ., Cambridge.
+t Dept. of Mathematics and Computation Center,
+Res. Lab.
+of Electronics, M.I.T., Cambridge, Mass.
+find only a few machines (mostly "general-purpose"
+computers, programmed for the moment to behave ac-
+cording to some specification) doing things that nmight
+claim any real initellectual status. Some would be prov-
+ing mathematical theorems of rather undistinguished
+character. A few machines might be playing certain
+games,
+occasionally
+defeating
+their
+designers.
+Sonme
+might be distinguishing between hand-printed letters.
+Is this enough to justify so much interest, let alone deep
+concern? I believe that it is; that we are on the thresh-
+old of an era that will be strongly influenced, and quite
+possibly dominated, by intelligent problem-solving mla-
+chines. But our purpose is not to guess about what the
+future may bring; it is only to try to describe and ex-
+plain what seem nlow to be our first steps toward the
+construction of "artificial intelligence."
+Along with the development of general-purpose com-
+puters, the past few years have seen an increase in effort
+toward the discovery and mechanizationi of problerm-
+solving processes. Quite a number of papers have ap-
+peared describing theories or actual comiiputer programs
+concerned with game-playing, theorem-provinig,
+pat-
+tern-recognition, and other domainis which would seem
+to require some intelligence. The literature does not in-
+clude any general discussion of the outstanding prob-
+lems of this field.
+In this article, an attempt will be made t-o separate
+out, analyze, and find the relations between some of
+these problems. Analysis will be supported with enough
+examples from the literature to serve the introductory
+function of a review article, but there remains much
+relevant work not described here. This paper is highly
+compressed, and therefore, cannot begin to discuss all
+these matters in the available space.
+There is, of course, no generally accepted theory of
+"intelligence"; the analysis is our own and mnay be con-
+troversial. We regret that we cannot give full personal
+acknowledgments here
+suffice it to say that we have
+discussed these matters with almnost every one of the
+cited authors.
+It is convenient to divide the problems into five main
+areas:
+Search,
+Pattern-Recognition,
+Learning,
+Plan-
+ning, and Iniduction; these comprise the main divisions
+January
+8
+Minsky: Steps Toward Artificial Intelligence
+of the paper. Let us summarize the entire argument
+very briefly:
+A computer can do, in a sense, only what it is told to
+do. But even when we do not know exactly how to solve
+a certain problem, we may program a machine to
+Search through some large space of solution attempts.
+Unfortunately, wheni we write a straightforward pro-
+gram for such a search, we usually find the resulting
+process
+to be enormously
+inefficient. With
+Pattern-
+Recognition techniques, efficiency can be greatly im-
+proved by restricting the machine to use its methods
+only on the kind of attempts for which they are appro-
+priate. And with Learning, efficiency is further improved
+by directing Search in accord with earlier experiences.
+By actually analyzing the situation, usinig what we call
+Planning methods, the machinie may obtain a really
+fundanmental improvemeint by replacing the originally
+given Search by a much smiialler, more appropriate ex-
+ploration. Finally, in the section on Induction, we con-
+sider some rather more global concepts of how one
+might obtain intelligenit machine behavior.
+I. THE PROBLEM OF SEARCH1
+Summary-If, for a given problem, we have a means for checking
+a proposed solution, then we can solve the problem by testing all
+possible answers. But this always takes much too long to be of
+practical interest. Any device that can reduce this search may be of
+value. If we can detect relative improvement, then "hill-climbing"
+(Section I-B) may be feasible, but its use requires some structural
+knowledge of the search space. And unless this structure meets cer-
+tain conditions, hill-climbing may do more harm than good.
+\Vheni we talk of problem-solvinig in what follows we
+will usually suppose that all the problems to be solved
+are iniitially well defined [1]. By this we meain that with
+each problem we are given somie systematic way to
+decide when a proposed solution is acceptable. Most of
+the experimental work discussed here is concerined with
+such well-definied problems as are met in theorem-prov-
+ing, or in games with precise rules for play and scoring.
+In one sense all such problems are trivial. For if there
+exists a solutioni to such a problem, that solution can be
+found eventually by any blind exhaustive process which
+searches through all possibilities. And it is usually not
+difficult to mechanize or program such a search.
+But for any problem worthy of the name, the search
+through all possibilities will be too inefficient for prac-
+tical use. And on the other hand, systems like chess,
+or nontrivial parts of mathematics, are too complicated
+for complete analysis. Without complete analysis, there
+must always remaini some core of search, or "trial and
+error." So we need to finid techniques through which the
+1 The adjective "heuristic," as used here and widely in the litera-
+ture, means related to improving problem-solving performance; as a
+noun it is also used in regard to any method or trick used to improve
+the efficiency of a problem-solving system. A "heuristic program,"
+to be considered successful, must work well on a variety of problems,
+and may often be excused if it fails on some. We often find it worth-
+while to introduce a heuristic method which happens to cause oc-
+casional failures, if there is an over-all improvement in performance.
+But imperfect methods are nlot niecessarily heuristic, nor vice versa.
+Hence "heuristic" shouild not be regarded as opposite to "foolproof";
+this has caused some coniftusioni in the literature.
+results of incomplete analysis can be used to mnake the
+search more efficient. The necessity for this is simply
+overwhelming: a search of all the paths through the
+game of checkers involves some 1040 move choices [21;
+in chess, some 10120 [3]. If we organized all the particles
+in our galaxy into some kind
+of
+parallel computer
+operating at the frequency of hard cosmic ravs, the lat-
+ter computation would still take impossibly long; we
+cannot expect improvements
+in "hardware" aloile to
+solve all our problems! Certainly we must use whatever
+we know in advance to guide the trial generator. And
+we must also be able to make use of results obtained
+alonig the way.23
+A. Relative Improvement, Hill-Climbing, and Heuristic
+Connections
+A problem can hardly come to interest us if we have
+no backgroutnd of information about
+it. We usually
+have some basis, however flimsy, for detecting improve-
+ment; some trials will be judged more successful than
+others. Suppose, for example, that we have a comparator
+which selects as the better, one from any pair of trial
+outcomes. Now the comparator cannot, alonie, serve to
+make a problem well-defined. No goal is definied. But if
+the
+comparator-defined
+relation
+betweeni
+trials
+is
+"transitive" (i.e., if A dominates B and B dominates C
+implies that A dominates C), then we can at least define
+"progress," and ask our machine, given a time limit, to
+do the best it can.
+But it is essential to observe that a comparator by
+itself, however shrewd, cannot alone give any imnprove-
+ment over exhaustive search. The comparator gives us
+information about partial success, to be sure. But we
+need also some way of using this information to direct
+the pattern of search in promising directionis; to select
+new trial points which are in some senise "like," or
+"similar to," or "in the same direction as" those which
+have given the best previous results. To do this we need
+some additional structure on the search space. This
+structure need not bear much resemblance to the ordi-
+nary spatial notion of direction, or that of distanice, but
+it must somnehow tie together poinlts which are heuristi-
+cally related.
+\Ve will call such a structure a heuristic connection.
+We introduce this term for informal use onl--that is
+why our definition is itself so informal. But we need it.
+Many publications have been marred by the misuse,
+2 McCarthy [11 has discussed the enumeration problem from a
+recursive-function theory point of view. This incomplete but sug-
+gestive paper proposes, among other things, that "the eniumeratioln
+of partial recursive functions should give an early place to composi-
+tioIns of functions that have already appeared."
+I regard this as an important notion, especially in the light of
+Shannon's results [4] on two-terminal switching circuits
+that the
+"average" n-variable switching function requires about 2"/n con-
+tacts. This disaster does not usually strike when we construct "inter-
+esting" large machines, presumably because they are based on com-
+position of functions already found useful.
+3 In 151 and especially in [61 Ashby has ani excellent discussioni of
+the search problem. (However, I am not convinced of the usefulniess
+of his notion of "ultrastability," which seems to be little more than
+the property of a machine to search unitil somethin-g stops it.)
+1961
+9
+PROCEEDINGS OF THE IRE
+for this purpose, of precise mathematical terms,
+e.g.,
+metric anid topological. The term "connection," with its
+variety of dictionary meanings, seems just the word to
+designate a relation without comnmitmiienit as to the
+exact nature of the relation.
+An important and simple kind of heuristic connection
+is that defined when a space has coordinates (or param-
+eters) and there is also defined a nunmerical "success-
+function" E which is a reasonably smooth functioni of
+the coordinates. Here we can use local optimization or
+hill-climbing methods.
+B. Hill- Climbing
+Suppose that we are given a black-box machine with
+inputs Xi,
+, XI, and an output E(X1,
+, XI/). W;e
+wish to maximize E by adjusting the input values. But
+we are not given any mathemnatical description of the
+function E; hence we cannot use differentiation or re-
+lated methods. The obvious approach
+is
+to explore
+locally about a point, finding the direction of steepest
+ascent. One moves a certain distance in that direction
+anid repeats the process until improvement ceases. If the
+hill
+is smooth this may be done, approximately, by
+estimating the gradient component dE/3Xi separately
+for each coordinate Xi. There are more sophisticated
+approaches (one may use noise added to each variable,
+and correlate the output with each input, see Fig. 1),
+but this is the general idea. It is a fundamental tech-
+nique, and we see it always in the backgrounid of far
+mnore complex systems. Heuristically, its great virtue
+is this: the sampling effort (for determnining the direc-
+tion of the gradient) grows, in a sense, only linearly
+with the number of parameters. So if we can solve, by
+such a method, a certain kind of problem inivolving
+many parameters, then the addition of more paramiieters
+of the same kind ought not cause an inordinate in-
+crease in difficulty. We are particularly interested in
+problem-solving methods which can be so extended to
+more difficult problems. Alas, most interesting systems
+which involve combinational operations usually grow
+exponentially more difficult as we add variables.
+A great variety of hill-climbing systems have been
+studied under the names of "adaptive" or "self-opti-
+mizinig" servomechanisms.
+C. Troubles with Hill-Climbing
+Obviously, the gradient-following hill-climber would
+be trapped if it should reach a local peak which is not a
+true or satisfactory optimum. It must then be forced to
+try larger steps or changes.
+It is often supposed that this false-peak problem is
+the chief obstacle to machine learning by this method.
+This certainly can be troublesome. But for really diffi-
+cult problems, it seems to us that usually the more
+fundamental problem
+lies
+in finding any significant
+peak at all. Unfortunately the known E functions for
+difficult problemns often exhibit what we have called
+[7] the "Mesa Phenomenon" in which a small change in
+FROM OTHER U's
+-8
+U.
+-
+TO OTHER U's
+Fig. 1
+"Multiple simultaineous optimizers" search for a (local) mnax-
+imum value of some
+funiiction E(XI,
+- -
+XJ) of
+several
+pa-
+rameters. Each unit Ui independently "jitters" its parameter Xi,
+perhaps randomly, by adding a variation 1i(t) to a current mean
+value mi. The changes in the quiantities bi and E are correlated,
+anld the result is used to (slowly) change yi. The filters are to re-
+move dc components. This simultaneous techniique, really a formii
+of coherenit detection, usually has an advanltage ov-er methods
+dealing separately and sequentially with each paramneter. (Cf. the
+discussion of "informative feedback" in Wiener [11], p. 133 ff.)
+a parameter usually leads to either no change in per-
+formance or to a large change in performuaince. The
+space
+is thus composed primarily of
+flat regions or
+"mesas." Any tendency of the trial generator to make
+small steps then results in much aimless wandering
+without compensating information gainis. A profitable
+search in such a space requires steps so large that hill-
+climbing
+is essenitially ruled out. The problem-n-solver
+must find other methods; hill-climbing
+m-light still be
+feasible with a different heuristic connectioni.
+Certainly, in our own intellectual behavior we rarely
+solve a trickiy problem by a steady climb toward suc-
+cess.
+I doubt that in any one simple mechanism, e.g.,
+hill-climbing, will we find the mieanis to build an efficienit
+and general problem-solving machine.
+Probably, an
+intelligent machine will require a variety of differenit
+mechanisms. These will be arranged in hierarchies, and
+in even more comnplex, perhaps recursive, structures.
+And perhaps what amounts to straightforward hill-climb-
+ing on one level may sonmetimes appear (onl a lower
+level) as the sudden jumllps of "insight."
+II. THE PROBLEM OF PATTERN RECOGNITION
+Summary-In order not to try all possibilities, a resourceful
+machine must classify problem situations into categories associated
+with the domains of effectiveness of the machine's different methods.
+These pattern-recognition methods must extract the heuristically
+significant features of the objects in question. The simplest methods
+simply match the objects against standards or prototypes. More
+powerful "property-list" methods subject each object to a sequence
+of tests, each detecting some property of heuristic importance. These
+properties have to be invariant under commonly encountered forms
+of distortion. Two important problems arise here-inventing new
+useful properties, and combining many properties to form a recog-
+nition system. For complex problems, such methods will have to be
+augmented by facilities for subdividing complex objects and describ-
+ing the complex relations between their parts.
+Any powerful heuristic program is bound to contain a
+variety of different methods and techniques. At each
+step of the problem-solving process the machinie will
+have to decide what aspect of the problem to work on,
+to
+Janitary
+A1insky: Steps Toward Artificial Intelligence
+and then which mlethod to use. A choice mnust be made,
+for we usually canntiot afford to try all the possibilities.
+In order to deal with a goal or a problem, that is, to
+choose an appropriate method, we have to recognize
+what kind of thing
+it
+is. Thus the nieed to choose
+among actions compels us to provide the machine with
+classification techniques, or means of evolving them.
+It
+is of overwhelming inmportance that the machine
+have classification techniques which are realistic. But
+"realistic" can be defined only with respect to the en-
+vironmenits to be encounitered by the machine, and with
+respect to the methods available to
+it.
+Distinctions
+which caninot be exploited are not worth recognizing.
+And methods are usuall
+worthless without classifica-
+tion schemes which can help decide when they are ap-
+plicable.
+A.
+Teleological Requirements of Classification
+The useful classifications are those which match the
+goals and methods of the machine. The objects grouped
+together in the classifications should have something of
+heuristic value in common; they should be "similar" in a
+useful sense; they should depend on relevant or essential
+features. WVe should not be surprised, then, to find our-
+selves using inverse or teleological expressions to define
+the classes. \Ve really do want to have a grip on "the
+class of objects which can be transformed into a result
+of form Y," that is, the class of objects which will sat-
+isfy some goal. One should be wary of the familiar in-
+junction against using teleological language in science.
+XVhile it is true that talking of goals in some contexts
+imiay dispose us towards certain kinds of animilistic ex-
+planationis, this need not be a bad thing in the field of
+problem-solving;
+it is hard to see how one can solve
+problems without thoughts of purposes. The real diffi-
+cultv
+with
+teleological
+definitions
+is
+technical,
+not
+philosophical, and arises when they have to be used and
+niot just mentionied. One obviously canniot afford to use
+for classification a method which actually requires wait-
+ing for some remote outcome, if one needs the classifica-
+tion precisely
+for deciding whether
+to try out that
+mlethod. So, in practice, the ideal teleological definitions
+often have to be replaced by practical approximnations,
+usually with some risk of error; that is, the definitions
+have to be made heuristically effective, or economically
+usable. This is of great importanice. (\Ve can think of
+"heuristic effectiveness" as conitrasted to the ordinary
+mathematical notion of "effectiveniess" which distin-
+guishes those definitions which can be realized at all by
+machine, regardless of efficiency.)
+B. Patterns and Descriptions
+It
+is usually necessary to have ways of assigning
+names
+symbolic expressions-to the defined classes.
+The structure of the names will have a crucial influence
+on the mental world of the machine, for it determines
+what kinds of things can be conveniiently thought about.
+There are a variety of ways to assign names. The sim-
+plest schemes use what we will call conventional (or
+proper) names; here, arbitrary symbols are assigned to
+classes. But we will also want to use comnplex descrip-
+tions or computed names; these
+are constructed
+for
+classes by processes which depend on the class definitions.
+To be useful, these should reflect some of the structure
+of the things they designate, abstracted in a mainner
+relevant to the problem area. The notion of description
+merges smloothly
+inlto
+the more complex
+notion
+of
+model; as we think of it, a model is a sort of active de-
+scription. It is a thinlg whose form reflects some of the
+structure of the thing represented, but which also has
+somle of the character of a working machinie.
+In Section III we will consider "learniniig" systems.
+The behavior of those systems can be made to change
+in reasonable ways depending on what happened to
+them in the past. But by themselves, the simuple learninig
+systems are useful only in recurrent situations; they
+canniot cope with any significant novelty. Nontrivial
+performance is obtained only when learninig systemis are
+supplemenited with classification or patterni-recognitioni
+methods of some inductive ability. For the variety of
+objects encountered in a nionitrivial search is so enior-
+mous that we cannot depend oni recurrence, and the miiere
+accumulation of records of past experienice canl have
+onily limited value. Patterni-Recogniitioni, by providinig
+a heuristic connection which links the old to the 1new,
+can make learning broadly useful.
+What is a "pattern"? We ofteni use the term teleolog-
+ically to mean a set of objects which cani in somie (useful)
+wav be treated alike. For each problem area we nmust
+ask, "What patterns would be useful for a imiachinie
+workinig on such problems?"
+The problems of visual pattern-recogniition have re-
+ceived much attention in recenit years anid miiost of our
+examples are from this area.
+1) Prototype-Derived Patterns: The problem of read-
+ing printed characters is a clear-cut instanice of a situa-
+tioin in which the classification is based ultimlately oni a
+fixed set of "prototypes"
+e.g., the dies fromi which the
+C. Prototype-Derived Patterns
+The problem of reading printed characters is a clear-
+cut instance of a situation in which the classificationi is
+based ultimately on a fixed set of "prototypes"
+e.g.,
+the dies from which the type font was made. The indi-
+vidual marks on the printed page may show the results
+of many distortions. Some distortions are rather sys-
+tematic: change in size, position, orientation. Some are
+of the nature of noise: blurring, grain, low contrast, etc.
+If the noise is not too severe, we may be able to man-
+age the identification by what we call a normalization
+and template-matching
+process. We
+first remove the
+differences related to size and position
+that
+is, we
+normalize the input figure. One may do this, for example,
+by constructing a similar figure inscribed in a certain
+fixed triangle (see Fig. 2); or one may transform the fig-
+ure to obtain a certain fixed center of gravity and a unit
+seconid cenitral moment. (There is an additionial problem
+1961
+11
+PROCEEDINGS OF THE IRE
+with rotational equivalence where it is not easy to avoid
+all ambiguities. One does not want to equate "6" anid
+"9". For that matter, one does not want to equate (0, o),
+or (X, x) or the o's in xo and xo, so that there may be
+context-dependency
+involved.) Once normalized, the
+unknown figure can be compared with templates for the
+prototypes and, by means of some measure of matching,
+choose the best fitting template. Each "matching cri-
+terion" will be sensitive to particular forms of noise
+and distortion, and so will each normalization
+pro-
+cedure. The inscribing or boxing method may be sensi-
+tive to small specks, while the momeint method will be
+especially sensitive to smearing, at least for thin-line
+figures, etc. The choice of a matching criterion must de-
+pend on the kinds of noise and transformations com-
+monly en-countered. Still, for many problems we may get
+acceptable results by using straightforward correlation
+methods.
+When the class of equivalence transformations is very
+large,
+e.g., when
+local stretching and distortion
+are
+present, there will be difficulty in finding a uniform
+normalization method. Instead, one may have to con-
+sider a process of adjusting locallv for best fit to the
+template. (While measuring the matching, one could
+"jitter" the figure locally; if an improvement were found
+the process could be repeated using a slightly different
+change, etc.) There is usually no practical possibility
+of applying to the figure all of the admissible transfor-
+mations. And to recognize the topological equivalenice of
+pairs such as those in Fig. 3 is likely beyond anly prac-
+tical kind of iterative local-improvenment or hill-climiibing
+matching procedure. (Such recognitions cani be mech-
+anized, though, by methods which follow lines, detect
+vertices, and build up a description in the formi, say, of
+a vertex-connection table.)
+The template matching scheme, with its niormaliza-
+tion and direct comparison and matching criterion, is
+just too limited in conception to be of much use in more
+difficult problems.
+If the transformation set is large,
+normalization,
+or
+"fitting," may be impractical,
+es-
+pecially if there is no adequate heuristic connection on
+the space of transformations. Furthermore,
+for each
+defined pattern, the system has to be presenited with a
+prototype. But
+if one has in minid a fairly abstract
+class, one may simply be unable to represent its essen-
+tial features with one or a very few concrete examples.
+How could one represent with a single prototype the
+class of figures which have an even number of discon-
+nected parts? Clearly, the template system has negli-
+gible descriptive power. The property-list system frees
+us from some of these limitations.
+D. Property Lists and "Characters"
+We define a property to be a two-valued function
+which divides figures into two classes; a figure is said to
+have or not have the property according to whether
+the function's value is 1 or 0. Given a number N of dis-
+tinction properties, we could define as many as 2n sub-
+classes by their set intersectionis and, henice, as many as
+22n patterns by combiniing the properties with AND's
+and OR's. Thus, if we have three properties, rectilinear,
+connected, and cyclic, there are eight subclasses (anid 256
+patterns) defined by their intersectionis (see Fig. 4).
+If the giveni properties are placed in a fixed order theni
+we can represenit anly of these eleinenitary regions by a
+vector, or string of digits. The vector so assignied to each
+figure will be called the Character of that figure (with
+respect to the sequenice of properties in question). (In
+[9] we use the term characteristic for a property without
+restriction to 2 values.) Thus a square has the Char-
+acter (1, 1, 1) and a circle the Character (0, 1, 1) for the
+given sequence of properties.
+For many problems oine can use such Characters as
+niames for categories and as primitive eleimieints with
+Fig. 2-A simple normalization techniique. If ani object is expanded
+uniformly, without rotation, until it touches all three sides of a
+triangle, the resulting figure will be unLique, and pattern-recogni-
+tion can proceed withotut concern abouit relative size and position.
+0
+A
+A'
+B
+B
+Fig. 3
+The figures A, A' and B, B' are topologically equivalent
+pairs. Lengths have been distorted in an arbitrary manner, but
+the connectivity relations between corresponding points have
+been preserved. In Sherman [81 and Haller [391 we find computer
+programs which can deal with such equivalences.
+RECTILINEAR
+-4
+~~~~~~~~~~~~~~~~~~~4 F
+zz
+(i1,f 0)
+(1,0,0)
+L--j
+CONTAINING
+A
+(I,
+1,
+)
+(Ito01)
+A LOOP
+D
+(Of 1,
+)
+(0,0,1)
+(TD
+FJ
+(0,1,0)
+(0,0,0)
+CD
+Fig. 4-The eight regions represent all the possible configurations of
+values of the three properties "rectilinear," "connected," "con-
+taining a loop." Each region contains a representative figure, and
+its associated binary "Character" sequence.
+6
+6
+-
+l-
+12
+Janu,sary
+rT-T-","
+Of
+ll6insky: Steps Toward Artificial Intelligence
+which to define an adequate set of patterns. Characters
+are miiore thani conventional names. They are instead
+very rudimentary forms of description (having the form
+of the simplest symbolic expression-the
+list) whose
+structure provides some information about the desig-
+nated classes. This is a step, albeit a small one, beyond
+the template method; the Characters are not simple
+inistances of the patterns, and the properties may them-
+selves be very abstract. Finding a good set of properties
+is the major concern of many heuristic programs.
+E. Invariant Properties
+One of the prime requirements of a good property
+is that it be invariant under the commonly encoun-
+tered
+equivalence
+transformations.
+Thus
+for
+visual
+Pattern-Recognition we would usually want the ob-
+ject identification to be independent of uniform changes
+in size anid position. In their pioneering paper Pitts
+and McCulloch
+[10] describe a general technique for
+formiiig invariant properties from noninvariant ones,
+assumiiing that the transformation space has a certain
+(group) structure. The idea behind their mathematical
+argumenit is this: suppose that we have a function P
+of figures, and suppose that for a given figure F we
+define [F] =
+F1, F2,
+-
+-
+-
+} to be the set of all figures
+equivalent to F under the given set of transformations;
+further, define P[F] to be the set IP(F1), P(F2),
+of values of P onl those figures. Finally, define P*[F]
+to be AVERAGE (P[F]). Then we have a new prop-
+erty, P* whose values are independent of the selection
+of F from an equivalence class defined by the trans-
+formations. We have to be sure that when different
+representatives are chosen from a class the collection
+[F] will always be the same in each case. In the case
+of continuous transformation spaces, there will have to
+be a measure or the equivalent associated with the set
+[F] with respect to which the operation AVERAGE is
+defined, say, as an integration.4
+This method is proposed [10] as a neurophysiological
+model
+for pitch-invariant hearing anid size-invarianit
+visual recognition (supplemented with visual centering
+mechanisms). This model is discussed also by Wiener.5
+Practical applicationi is probably limited to one-diml-en-
+sionial groups and analog scanning devices.
+In much
+receiit work this probleml
+is avoided by
+using properties already invariant unider these trans-
+formations. Thus a property might counit the number
+4 In the case studied in [10] the transformation space is a group
+with a uniquely defined measure: the set [F] can be computed without
+repetitions by scanning through the application of all the transforms
+T, to the given figure so that the invariant property can be defined by
+P*(F)
+f
+aGGP(Ta(F))d1A
+wNhere G is the group and IA the measure. By substitutinig TO(F) for
+F in this, one can see that the result is independent of choice of d
+since we obtain the same integral over GO-'= G.
+I Seep. 160 ff. of [111.
+of connected components in a picture-this is invariant
+unider size and position. Or a property may counit the
+number of vertical lines in a picture
+this is invariant
+under size anid position (but not rotationi).
+F. Generating Properties
+The problem of generating useful properties has been
+discussed by Selfridge [12]; we shall summarize his ap-
+proach. The machine is given, at the start, a few basic
+tranisformationis A41,
+*
+- *, A,,, each of which transforms,
+[Al
+AA2
+0
+O
+COUNT
+5
+Fig. 5-An arbitrary sequence of picture-transformiiations, followed
+by a numerical-valued function, can be used as a property func-
+tion for pictures. AI removes all points which are niot at the edge of
+a solid region. A2 leaves only vertex poinits-at which an arcsud-
+denly changes direction. The functioni C sim-iply counllts the nulm-
+ber of points remaining in the picture. All remarks in the text
+could be generalized to apply to properties, like AIA2C, which
+canl have more than two values.
+in some significant way, each figure inlto another figure.
+A,1 miight,
+for example, remove
+all
+poinlts
+not on a
+boutndary of a solid region; -42 might leave only- vertex
+poinlts; A3 might fill utp hollow regions, etc. (see Fig. 5).
+Each sequence A j114 .2
+..
+ik of these formls a niew
+transformation, so that there
+is available anl infiniite
+variety. We provide the machinie also with onie or more
+"terminal" operations which conivert a picture inito a
+number, so that any sequenice of the elementary tranis-
+formations, followed by a terminial operationi, definies a
+property. (Dineeni
+[13] describes how these processes
+were programnmiled in a digital computer.) We canl start
+with a few short sequences, perhaps choseni randomly.
+Selfridge describes how the miiachinie might learni niew
+useful properties.
+We now feed the machine A's and O's tellinig the machinie each
+time which letter it is. Beside each sequence under the two letters,
+the machine builds up distribution funictionis from the resuLlts of
+apply inig the sequenices to the image. Now, since the sequenices were
+choseni completely randomly,
+it may well be that most of the se-
+quences have very flat distribution functions; that is, they [provide]
+no information, and the sequences are therefore [by definitioni] iiot
+signiificant. Let it discard these and pick some others. Sooner or later,
+however, some sequences will prove significant; that is, their distri-
+bution functions will peak up somewhere. What the machine does
+now is to build up new sequences like the significant onies. This is the
+important point. If it merely chose sequences at ranidom it might
+take a very long while indeed to find the best sequences. Buit with
+some successful sequences, or partly successful ones, to gulide it, we
+hope that the process will be much qtuicker. The crucial questioni
+remains: how do we build up sequences "like" other sequences, but
+not idcentical? As of now we think we shall merely build sequenices
+from the transition frequencies of the significanit sequences. We shall
+build up a matrix of transition frequencies from the significanit onies,
+anid use those as transition probabilities with which to choose
+lew
+sequtenices.
+We do niot claim that this method is necessarilv a very good way
+of choosinig sequences-only that it should do better than niot uisinig
+1961
+13
+PROCEEDINGS OF THE IRE
+at all the knowledge of what kind of sequences has worked. It has
+seemed to us that this is the crucial point of learning.6
+It would indeed be remarkable if this failed to yield
+properties more useful than would be obtainied from
+completely random sequenice selection. The generatinig
+problem is discussed further in Minisky [14].. Newell,
+Shaw, and Simon
+[15] describe more deliberate, less
+statistical, techniques that might be used to discover
+sets of properties appropriate to a given problem area.
+One may think of the Selfridge proposal as a system
+which uses a finiite-state laniguage to describe its proper-
+ties. Solomonoff
+[55],
+[18] proposes some techniques
+for discovering common features of a set of expressions,
+e.g., of the descriptions of those properties of already
+established utility; the methods can then be applied
+to generate new properties with the same common
+features.
+I consider the lines of attack in
+[12],
+[15],
+[18] and
+[55], although still incomplete, to be of the
+greatest importance.
+G. Combining Properties
+One cannot expect easily to find a small set of proper-
+ties which will be just right for a problem area. It is
+usually much easier to find a large set of properties
+each of which provides a little useful information. Then
+one is faced with the problem of finding a way to com-
+bine them to make the desired distinctions. The simplest
+method is to choose, for each class, a typical character
+(a particular sequence of property values) and then to
+use some matching procedure, e.g., counting the inum-
+bers of agreemenits and disagreements, to compare an
+unknown with these choseni
+"Character prototypes."
+The linear weighting scheme described just below is a
+slight genieralization on this. Such methods treat the
+properties as more or less independent evidenice for and
+against propositions; more general procedures (about
+which we have yet little practical information)
+niust
+account also for nonlinear relations between properties,
+i.e., must contain weighting terms for joint subsets of
+property values.
+1) "Bayes nets" for combining independent properties:
+We consider a single experiment in which an object is
+placed in front of a property-list machine. Each prop-
+erty Et will have a value, 0 or 1. Suppose that there
+has been defined some set of "object classes" Fj, and
+that we want to use the outcome of this experiment to
+decide in which of these classes the object belongs.
+Assume that the situation is basically probabilistic,
+and that we know the probability pij that, if the object
+is in class Fj then the ith property Ei will have value 1.
+Assume further that these properties are independent;
+that is, even given Fj, knowledge of the value of Es tells
+us nothing more about the value of a different Ek in
+the same experiment. (This is a strong condition
+see
+below.) Let fj be the absolute probability that an object
+6 See p. 93 of [121.
+is in class Fj. Finally, for this experimiienit define V to be
+the particular set of i's for which the E,'s are 1. Theni
+this V represents the Character of the object. Fromn the
+definition of conditional probability, we have
+Pr (Fj, V) = Pr (V)*Pr (Fj
+V) = Pr (Fj) Pr (V| Fj).
+Given the Character V, we wanit to guess which Fj has
+occurred
+(with the least chanice of being wrong -the
+so-called maximum
+likelihood estimuate); that
+is,
+for
+which j is Pr(Fj| V) the largest? Since in the above
+Pr (V) does niot depend oIn j, we have onily to calculate
+for whichj is Pr (Fj)
+- Pr( V| Fj) =Oj Pr (VI Fj) the largest.
+Hence, by our indepenidence hypothesis, we have to
+maxinmize
+(1)
+- 1
+pij-
+CqVi
+=
+ijGV
+.
+II
+q j.
+iEV
+iev
+icv
+qij
+all
+i
+These "maximnum likelihood" decisions can be made
+(Fig. 6) by a simple nietwork device.7
+These nets resemble the genieral schematic diagrams
+proposed
+in the "Pandemoniumn" model of Selfridge
+[19] (see his Fig. 3). It is proposed there that some in-
+tellectual processes might be carried out by a hierarchy
+of simultaneously functioning submlachines suggestively
+called "demonis." Each uniit is set to detect certain pat-
+Fig. 6
+"Net" model for maximum-likelihood decisions based on
+linear weightings of property values. The input data are examined
+by each "property filter" Ei. Each Ei has "O" and "1" output
+channels, one of which is excited by each input. These outputs are
+weighted by the corresponding pij's, as shown in the text. The re-
+sulting signals are multiplied in the F, units, each of which "col-
+lects evidence" for a particular figure class. (We could have used
+here log(pi,), and added at the Fi units.) The final decision is
+made by the topmost unit D, who merely chooses that F, with the
+largest score. Note that the logarithm of the coefficient pil/qii in
+the second expression of (1) can be construed as the "weight of the
+evidence" of Ei in favor of F,. (See also [211 and [221.)
+7At the cost of an additional network layer, we may also account
+for the possible cost guk that would be incurred if we were to assign
+to Fk a figure really in class F1: in this case the minimum cost decision
+is given by the k for which
+E g3kOjI
+pij H qi
+j
+ieV
+icV
+is the least. V is the complement set to Viqij is (1-pii).
+14
+January
+Minsky: Steps Toward Artificial Intelligence
+terns in the activity of others and the output of each
+unit announices the degree of confidence of that unit
+that it sees what it is looking for. Our Es units are
+Selfridge's "data demons." Our units Fj are his "cog-
+nitive demonis"; each collects from the abstracted data
+evidence for a specific proposition. The topmost "de-
+cisioIn demoni" D responds to that one in the multitude
+below it whose shriek is the loudest.8
+It is quite easy to add to this "Bayes network model"
+a imiechaniism which will enable it to learn the optimal
+conniiectioni weightinigs. Imaginie that, after each event,
+the machinie is told which Fj has occurred; we could im-
+pleinent this by sendinig back a signal along the connec-
+tionis leading to that Fj unit. Suppose that the connec-
+tioin for pij (or qij) containis a two-terminal device (or
+"s inapse") which stores a number wij. Whenever the
+joinlt evenit (Fj, E, = 1) occurs, we modify WUj by replac-
+inig it by (wij+t1), where 6 is a factor slightly less than
+unitv. And when the joinit event (Fj, Ej=0) occurs, we
+decremenit wij by replacing it with (wij)6. It is not diffi-
+cult to show that the expected values of the wij's will
+become proportional to the pij's [and, in fact, approach
+pij[0j(1-0)]. Hence, the machine tends to learn the
+optimal weighting on the basis of experience. (One must
+put in a similar mechaniism for estimating the q5j's.) The
+variance of
+the normalized weight wjj[(1-0)/0] ap-
+proaches [(1 -0)/(1 +0) ]pijqij. Thus a snmall value for 0
+meanis rapid learning but is associated with a large vari-
+ance, hence, with low reliability. Choosing 0 close to
+unity means slow, but reliable, learning.
+0 is really a
+sort of memiiory decay constant, and its choice must be
+determined by the noise and stability of the eniviron-
+ment-much nioise requires long averaging times, while
+a changing environment requires fast adaptation. The
+two requirements are, of course, incompatible and the
+decision has to be based on an economic compromise.9
+2) Possibilities of using random nets for Bayes deci-
+sions: The nets of Fig. 6 are very orderly in structure.
+Is all this structure necessary? Certainily if there were
+a great maiiy properties, each of which provided very
+little marginal information, some of them would not be
+miissed. Theni one might expect good results with a
+mere sampling of all the possible connection paths wij.
+And one might thus, in this special situation, use a
+random connection net.
+The two-layer nets here resemble those of the "per-
+ceptron" proposal of Rosenblatt
+[22]. In the latter,
+there is an additional level of connections coming di-
+rectly from randomly selected poiInts of a "retina."
+Here the properties, the devices which abstract the
+visual input data, are simple functions which add some
+iniputs, subtract others, and detect whether the result
+exceeds a threshold. Eq. (1), we think, illustrates what
+is of value in this scheme. It does seem clear that a
+maximum-likelihood type of analysis of the output of
+8 See also the report in [201.
+9 See also [71 anid [211.
+the property functions can be hanidled by such inets. But
+these nets, with their simple, ranidomnly generated, con-
+nections can probably never achieve recognitioni of such
+patterns as "the class of figures having two separated
+parts," and they cannot even achieve the effect of
+template recognition without size and positioin niormiial-
+ization (unless sample figures have been presented pre-
+viously in essentially all sizes and positions). For the
+chances are extremely small
+of
+findinig, by random
+methods, enough
+properties
+usefully correlated with
+patterns appreciably more abstract than those of the
+prototype-derived kind. And these networks cani really
+only separate out (by weighting) informationi in the in-
+dividual input properties; they cannot extract further
+information present in nonadditive formn. The "per-
+ceptron" class of machines have facilities iieither for
+obtaining
+better-than-chanlce
+properties
+nor
+for
+as-
+sembling better-than-additive comiibiniationis of those it
+gets from random construction.10
+For recognizing normalized printed or hanid-printed
+characters, single-point properties do surprisingly well
+[23]; this amounts to just "averaging" many samples.
+Bledsoe and Browning
+[24] claim good results with
+poinit-pair properties. Roberts [25] describes a series of
+experiments in this general area. Doyle
+[26] without
+normalization but with quite sophisticated properties
+obtainis excellent results; his properties are already sub-
+stantially size- and
+position-invariant. A general
+re-
+view of Doyle's work and other pattern-recognition ex-
+periments will be found in Selfridge and Neisser [20].
+For the complex discrimination,
+e.g.,
+between onie
+and two connected objects, the property problem
+is
+very serious, especially for long wiggly objects such as
+are handled by Kirsch [27]. Here some kind of recursive
+processing is required and combinations of simple prop-
+erties would almost certainly fail eveni with large nets
+and long training.
+We should not leave the discussion of some decisioni
+net models without noting their important limitations.
+The hypothesis that, for givenj, the pij represent inde-
+pendent events, is a very strong condition indeed. With-
+out this hypothesis we could still construct maximum-
+likelihood nets, but we would need an additional layer
+of cells to represent all of the joint events V; that is,
+we would need to know all the Pr (Fj4 V). This gives a
+general (but trivial) solution, but requires 2n cells for
+n properties, which is completely impractical for large
+systems. What is required is a system which computes
+some sampling of all the joint conditionial probabilities,
+and uses these to estimate others when needed. The
+work of Uttley [281, [29], bears on this problem, but his
+proposed and experimental devices do not vet clearly
+show how to avoid exponential growth."
+10 See also Roberts [251, Papert [211, and Hawkins [221. We cani
+find nothing resembling an analysis [see (1) abvel in [221 or sub-
+sequent publications of Rosenblatt.
+11 See also Papert [211.
+1961
+15
+PROCEEDINGS OF THE IRE
+H. Articulation and Attention
+Limitations of
+the Property-List Method
+Because of its fixed size, the property-list scheme is
+limited (for any given set of properties) in the detail
+of the distinctions it can make. Its ability to deal with
+a compound scene containing several objects is critically
+weak, and its direct extensions are unwieldy and unl-
+natural. If a machine can recognize a chair and a table,
+it surely should be able to tell us that "there is a chair
+and a table." To an extent, we can invent properties
+which allow some capacity for superposition of object
+Characters.12 But there is no way to escape the informa-
+tion limit.
+What is required is clearly 1) a list (of whatever length
+is necessary) of the primitive objects in the scene and
+2) a statement about the relations among them. Thus
+we say of Fig. 7(a), "A rectangle (1) contains two sub-
+figures disposed horizontally. The part on the left is a
+rectangle
+(2) which contains two subfigures disposed
+vertically; the upper a circle (3) and the lower a tri-
+angle (4). The part on the right
+.. etc." Such a de-
+scription entails an ability to separate or "articulate"
+the scene into parts. (Note that in this example the
+articulation
+is essentially recursive; the figure
+is first
+divided into two parts; then each part is described using
+the same machinery.) We can formalize this kind of de-
+scription in an expression language whose fundamental
+grammatical form is a pair (R, L) whose first member R
+names a relation and whose second member L
+is an
+ordered list (X1, X2,
+*
+*
+, xn) of the objects or subfigures
+which bear that relation to one another. We obtain the
+required flexibility by allowing the members of the list
+L to contain not only the names of "elementary" figures
+but also "subexpressions" of the form (R, L) designating
+complex subfigures. Then our scene above may be de-
+scribed by the expression
+[o, (E,
+((, (D, (tI , (0, A)))),
+(OI (O,
+(,(O7, O,)
+O)))
+I
+(a)
+(b)
+(c)
+Fig. 7-The picture 4(a) is first described verbally in the text. Then,
+by introducing notation for th, relations "inside of," "to the left
+of" and "above," we construct a symbolic description. Such de-
+scriptions can be formed and manipulated by machines. By ab-
+stracting out the complex relation between the parts of the figure
+we can use the same formula to describe the related pictures 4(b)
+and 4(c), changing only the list of primitive parts. It is up to the
+programmer to decide at just what level of complexity a part of a
+picture should be considered "primitive"; this will depend on
+what the description is to be used for. We could further divide
+the drawings into vertices, lines, and arcs. Obviously, for some
+applications the relations would need more metrical information,
+e.g., specification of lengths or angles.
+where (0,
+(x, y))
+means that y
+is contained in x;
+(-*, (x, y)) means that y is to the right of x; ( I, (x, y))
+means that y is below x, and ( 7, (x, y, z)) means that y
+is to the right of x and z is undern-eath and between theml.
+The symbols 0, 0, and A represent the indicated
+kinds of primitive geometric objects. This expressioin-
+pair description language may be regarded as a simple
+kind of "list-structure" language. Powerful computer
+techniques have been developed, originally by Newell,
+Shaw and Simon, for manipulating symbolic expres-
+sions in such languages for purposes of heuristic pro-
+gramming. (See the remarks at the end of Section IV.
+If some of the members of a list are themselves lists,
+they must be surrounded by exterior parentheses, aind
+this accounits for the accumulation of parentheses.)
+It may be desirable to construct descriptions in which
+the complex relation is extracted, e.g., so that we have
+an expressioni of the form FG where F is an expression
+which at once denotes the composite relation betweeni
+all the primitive parts listed in G. A complicatioin arises
+in connection with the "binding" of variables, i.e., in
+specifying the manner in which the elements of G partic-
+ipate in the relation F. This can be handled in general
+by the "X" notation [32] but here we can just use inte-
+gers to order the variables.
+For the given example, we could describe the rela-
+tional part F by an expression
+0(1, -
+(0(2, 1 (3, 4)),0(5, V(6, 7, 8))))
+in which we now use a "functional notation": "(0,
+(x, y)) " is replaced by " (i (x, y)," etc., making for better
+readability.
+To obtain
+the
+desired
+description,
+this
+expressioni has to be applied to an ordered list of primi-
+tive objects, which in this case is (F-, D, 0, A, 0, 0,
+0, 0). This composite functional form allows us to
+abstract the comnposite relation. By changing only the
+object list we can obtain descriptions also of the objects
+in Fig. 7(b) and 7(c).
+The important thing about such "articular" descrip-
+tions is that they can be obtained by repeated applica-
+tion of a fixed set of pattern-recognition techniques. Thus
+we can obtain arbitrarily complex descriptions from a
+fixed complexity classification-mechanism. The new ele-
+ment required in the mechanism (beside the capacity
+to manipulate the list-structures) is the ability to articu-
+late
+to "attend fully" to a selected part of the picture
+and bring all one's resources to bear on that part. In effi-
+cient problem-solving programs, we will not usually
+complete such a description in a single operation. In-
+stead, the depth or detail of description will be unider
+the control of other processes. These will reach deeper,
+or look more carefully, only when they have to, e.g.,
+when the presently available description is inadequate
+for a current goal. The author, together with L. Hodes,
+is working on patternl-recognition schemes using articu-
+lar descriptions. By manipulating the formal descrip-
+16
+January
+12 Cf. Mooers' technique of Zatocoding [301, [31 ].
+o I&
+.e-l.
+Minsky: Steps Toward Artificial Intelligence
+tions we can deal with overlapping and incomplete fig-
+ures, and several other problems of the "Gestalt" type.
+It seems likely that as machines are turned toward
+more difficult problem areas, passive classification sys-
+tems will become less adequate, and we may have to
+turn toward schemes which are based more on inter-
+nally-generated hypotheses, perhaps "error-controlled"
+along the lines proposed by MacKay [89].
+Space requires us to terminate this discussion of pat-
+tern-recognition and description. Among the important
+works not reviewed here should be mentioned those of
+Bomba [33] and Grimsdale, et al. [34], which involve
+elements of description, Unger [35] and Holland [36]
+for parallel processing schemes, Hebb [37] who is con-
+cerned with physiological description models, and the
+work of the Gestalt psychologists, notably Kohler [38]
+who have certainly raised, if not solved, a number of im-
+portant questions. Sherman [8], Haller [39] and others
+have completed programs using line-tracing operations
+for topological classification. The papers of Selfridge
+[12], [43], have beeni a major influence on work in this
+general area.
+See also Kirsch, et al. [27 ], for discussion of a number
+of interesting computer image-processing techniques,
+and see Minot [40 ] and Stevens [41 ] for reviews of the
+reading machine and related problems. One should also
+examine some biological work, e.g., Tinbergen [42] to
+see instances in which some discriminations which seem,
+at first glance very complicated are explained on the
+basis of a few apparently simple properties arranged in
+simple decision trees.
+III. LEARNING SYSTEMS
+Summary-In order to solve a new problem, one should first try
+using methods similar to those that have worked on similar prob-
+lems. To implement
+this
+"basic learning heuristic" one must
+generalize on past experience, and one way to do this is to use
+success-reinforced decision models. These learning systems are
+shown to be averaging devices. Using devices which learn also which
+events are associated with reinforcement, i.e., reward, we can build
+more autonomous "secondary reinforcement" systems. In applying
+such methods to complex problems, one encounters a serious dif-
+ficulty-in distributing credit for success of a complex strategy among
+the many decisions that were involved. This problem can be man-
+aged by arranging for local reinforcement of partial goals within a
+hierarchy, and by grading the training sequence of problems to
+parallel a process of maturation of the machine's resources.
+In order to solve a new problem one uses what might
+be called the basic learning heuristic-first try using
+methods similar to those which have worked, in the past,
+on similar problems. We want our machines, too, to
+benefit from their past experience. Since we cannot ex-
+pect new situations to be precisely the same as old ones,
+any useful learning will have to involve generalization
+techniques. There are too many notions associated with
+"learning" to justify defining the term precisely. But we
+may be sure that any useful learning system will have
+to use records of the past as evidence for more general
+propositions; it must thus entail some commitment or
+other about "inductive inference." (See Section V-B.)
+Perhaps the simplest way of generalizing about a set of
+entities is through constructing a new one which is an
+"ideal,"? or rather, a typical member of that set; the
+usual way to do this is to smooth away variation by
+some sort of averaging technique. And indeed we find
+that most of the simple learning devices do incorporate
+some averaging technique
+often
+that
+of averaging
+some sort of product, thus obtaining a sort of correla-
+tion. We shall discuss this family of devices here, and
+some more abstract schemes in Section V.
+A. Reinforcement
+A reinforcement process is one in which some aspects
+of the behavior of a system are caused to become more
+(or less) prominent in the future as a consequence of the
+application
+of
+a
+"reinforcement
+operator"
+Z.
+This
+operator is required to affect only those aspects of be-
+havior for which instances have actually occurred re-
+cently.
+The analogy is with "reward" or "extinction" (not
+punishment) in animal behavior. The important thing
+about this kind of process is that it is "operant" (a
+term of Skinner [44]); the reinforcement operator does
+not initiate behavior, but merely selects that which the
+Trainer likes from that which has occurred. Such a sys-
+tem must then contain a device M which generates a
+variety of behavior (say, in interacting with some en-
+vironment) and a Trainer who makes critical judg-
+ments in applying the available reinforcement opera-
+tors. (See Fig. 8.)
+Let us consider a very simple reinforcement model.
+Suppose that on each -presentation of a stimulus S an
+animal has to make a choice, e.g., to turn left or right,
+and that its probability of turning right, at the nth
+trial, is pn. Suppose that we want it to turn right. When-
+ever it does this we might "reward" it by applying the
+operator Z+;
+pn+l = Z+(pn) = f9Op. + (1 - 0)
+0 < 0 < 1
+RESPON SE
+ENVIROME N r
+STIMU'LUS_
+MACHINE
+Fig. 8
+Parts of an "operant reinforcement" learning system. In re-
+sponse to a stimulus from the environment, the machine makes
+one of several possible responses. It remembers what decisions
+were made in choosing this response. Shortly thereafter, the
+Trainer sends to the machine positive or negative reinforcement
+(reward) signal; this increases or decreases the tendency to make
+the same decisions in the future. Note that the Trainer need not
+know how to solve problems, but only how to detect success or
+failure, or relative improvement; his function is selective. The
+Trainer might be connected to observe the actual stimulus-re-
+sponse activity or, in a more interesting kind of system, just some
+function of the state of the environment.
+1961
+17
+PROCEEDINGS OF THE IRE
+which moves p a fractioni (1 -6) of the way towards
+unjitv.3 If we dislike what it does we apply negative re-
+iiforcemeint,
+pn+l = Z-(pn) = Op,
+mlovinig p the same fraction of the way toward 0. Somiie
+theory of such "linear" learniing operators, generalized
+to several stimuli and responses, will be found in Bush
+and Mosteller [45]. We canl show that the learninig re-
+sult is an average weighted by- anl exponentially-decay-
+inig time factor: Let Z,, be + 1 accordinig to whether the
+nth event
+is rewarded
+or extiniguished
+anid
+replace
+pl bycv = 2p,, -1 so that - 1 < c,, < 1, as for a correla-
+tioii coefficienit. Theni (with co=0) we obtaini by inlduc-
+tioIl
+Cn= (1 -)
+Ej
+"
+iZi,
+t.=(l
+aiid siiice
+11/1(1 _a)
+E
+n-i,
+0
+we canl write this as
+fn-iz.
+Cn+1
+~
+2 ,0n-i
+If the term Zi is regarded as a product of i) how the
+creature responded and ii) which kinid of reiniforcement
+was given, then
+c,,
+is a kinid of correlationi funictioni
+(with the decay weightinig) of the joinit behavior of these
+quatntities. The ordinary, uniiformiilv-weighted average
+has the same general formn but with timiie-dependenit 0:
+/
+1\
+1
+Cn+l=t1
+-
+c. +
+f Zn.
+(2)
+In (1) we have againi the situation described in Sectioni
+II-G, 1; a small value of 0 gives fast learning, anid the
+possibility of quick adaptationi to a changinig environi-
+mnenit. A near-unity value of 6 gives slow learning, but
+also smooths away unicertainities due to nioise. As nioted
+in Section II-G,
+1, the response distributioni comiies to
+approximate the probabilities of rewards of the alter-
+niative responises. (The imuportanice of this phenomenon
+has, I think, been overrated; it is certainily niot ani es-
+pecially rational strategy. Onie reasoniable alterniative
+is that of computinig the numbers pij as inidicated, but
+actually playinig at each trial the "milost likelv" choice.
+Except in the presenice of a hostile opponenit, there is
+usually nio reasoin to play a "mixed" strategy.14)
+13 Properly, the reinforcenent functions should depend both on
+the p's and on the previous reaction
+reward should decrease p if our
+animal has just turned to the left. The notation in the literature is
+also somewhat confusinig in this regard.
+14 The question of just how often one should play a strategy dif-
+ferent from the estimated optimum, in order to gain information, is
+an underlying problem in many fields. See, e.g., [851.
+In Samuel's coefficient-optimiiizinig program1
+[2]
+[see
+Sectioni II I-C, 1) ], there is a most inigeniious comiipromnise
+betweeni the exponietitial
+anid
+the
+uniiforimi averagilig
+methods: the value of N in (2) above beginis at 16 aind
+so remains until n= 16, theni N is 32 until n =32, anid
+so
+oni
+unitil
+n =256. Thereafter N remiains fixed
+at
+256. This nicely prevenits violenit fluctuationis
+ii1
+c>, aIt
+the start, approaches the uniiforimi weightling for a while,
+anid finially approaches the exponentially-weighted cor-
+relation, all in a maniner that requires ver} little COm1lpU-
+tatioII effort! Samuel's programil
+is at presenit the out-
+stanidinig examilple of a gamie-playing program
+which
+maitches average huniiani ability, and its success (in real
+time) is attributed to a wealth of such elegmciles, both
+in heuristics anid in programiniiiig.
+The problemii of extinictioni or "unilearniing" is espe-
+ciallv critical for complex, hierarchical,
+leariniig. For,
+onice a genieralizationi about the past has been miade,
+onie is likelI
+to build uponi it. Thus, onie may comiie to se-
+lect certaini properties as imiiportanit and begini to ulse
+them in the characterizationi of experienice, perhaps stor-
+inig onle's imemories in terimis of themii. If later it is dis-
+covered that some other properties would serve better,
+theni onie must face the probleml of tranislatinig, or aban-
+doninig, the records based oni the older system. This
+may be a very high price to pav. Onie does niot easil\
+give up anl old way of lookinig at thinigs, if the better onie
+demands much effort and experienice to be useful. TIhus
+the training sequtences oni which ouir miachinies will spenid
+their
+inifancies,
+so
+to
+speak,
+mllust
+be
+choseii very
+shrewdly to inisure that early abstractionis will provide a
+good founidationi for later difficult problemils.
+Inicidenitally,
+in spite of the space giveni here for
+their expositioni, I amii niot coniviniced that such "inicre-
+menital" or "statistical" leariiing schemes should play a
+cenitral role in our milodels. They will certainl\- conitiniue
+to appear as componienits of our prograiams but, I thinik,
+mainilv by default. The niore initelligenit onie is, the milore
+ofteni he should be able to learin
+fromii an experienice
+somilethinig rather definiite;
+e.g.,
+to reject or accept a
+hypothesis, or to chanige a goal. (The obvious exception
+is that of a
+truly- statistical
+eniviroiinmenit
+in which
+averaginig
+is iniescapable. But the heart of problemii-
+solvinig is alwavs, we thinik, the combinatorial part that
+gives rise to searches, anid we should usually be able to
+regard
+the complexities caused by
+"nioise"
+as miere
+annoyances, however irritatinig they may be.) In this
+conlniectiotn we cani refer to the discussioni of menmory in
+Miller, Galaniter anid Pribramii [46].15 This seems to be
+the first imajor work in Psychology to show the inifluenice
+of work in the artificial initelligenice area, anid its pro-
+grammiie is genierally quite sophisticated.
+B. Secondary Reinforcement and Expectation Models
+The simple reinforcement system is linmited by its de-
+penidenice on the Trainer. If the Trainier cani detect only
+1' See especially ch. 10.
+18
+Janiuary
+Minsky: Steps Toward Artificial Intelligence
+the solution
+of a problem, then we may encounter
+"mesa"~ phenomena which
+will
+limit performance on
+difficult problems. (See Section I-C.) One way to escape
+this is to have the machine learn to generalize on what
+the Trainer does. Then, in difficult problems, it may be
+able to give itself partial reinforcements along the way,
+e.g., upon the solution of relevant subproblems. The
+machine in Fig. 9 has some such ability. The new unit
+Fig. 9-An additional device U gives the machine of Fig. 8 the ability
+to learn which signals from the environment have been associated
+with reinforcement. The primary reinforcement signals Z
+are
+routed through U. By a Pavlovian conditioning process (not de-
+scribed here), external signals come to produce reinforcement sig-
+nals like those that have frequentlv succeeded them in the past.
+Such signals might be abstract, e.g., verbal encouragement. If the
+"secondary reinforcement" signals are allowed, in turn, to acquire
+further external associations (through,
+e.g.,
+a channel Zu
+as
+shown) the machine might come to be able to handle chains of
+subproblems. But something must be done to stabilize the system
+against the positive symbolic feedback loop formed by the path
+Zu. The profound difficulty presented by this stabilization prob-
+lem may be reflected in the fact that, in lower animals, it is very
+difficult to demonstrate such chaining effects.
+U is a device that learns which external stimuli
+are
+strongly correlated with the various reinforcement sig-
+nals, and responds to such stimuli by reproducing the
+corresponding reinforcement signals. (The device U is
+not itself a reinforcement learning device; it is more like
+a "Pavlovian" conditioning device, treating the Z sig-
+nals as "unconditioned" stimuli and the S signals as
+conditioned stimuli.) The heuristic idea is that any sig-
+nal from the environment which in the past has been
+well correlated
+with
+(say)
+positive
+reinforcement
+is
+likely to be an indication that something good has just
+happened.
+If the training on early problems was such
+that this is realistic, then the system eventually should
+be able to detach itself from the Trainer, and become
+autonomous.
+If we further permit "chaining"
+of the
+"secondary reinforcers," e.g., by admitting the connec-
+tion shown as a dotted line in Fig. 9, the scheme be-
+comes quite powerful, in principle. There are obvious
+pitfalls in admitting such
+a degree of autonomy; the
+values of the system may drift to
+a "nonadaptive"
+condition.
+C. Prediction and Expectation
+The evaluation unit U is supposed
+to acquire
+an
+ability to tell whether a situation is good or bad. This
+evaluation could be applied to imaginary situations as
+well
+as to real ones.
+If we could estimate the conse-
+quences of a proposed action (without its actual execu-
+tion), we could use U to evaluate the (estimated) result-
+ing situation. This could help in reducing the effort in
+search, and we would have in effect a machine with
+some ability to look ahead, or plan. In order to do this
+we need an additional device P which, givein the de-
+scriptions of a situation and an actioni, will predict a
+description of the likely result. (We will discuss schemes
+for doing this in Section IV-C.) The device P might
+be conistructed along the lines of a reinforcement learn-
+ing device. In such a system the required reinforcemienit
+signals would have a very attractive character. For the
+machine must reinforce P positively when the actual
+outtcome resembles that which was predicted
+accurate ex-
+pectations are rewarded. If we could further add a pre-
+mium to reinforcement of those predictions which have
+a novel aspect, we might expect to discern behavior
+motivated by a sort of curiosity. In the reinforcement
+of mechanisms for confirmed novel expectations (or new
+explanations) we may find the key to simulation of in-
+tellectual motivation.16
+Samuel's Program for Checkers: In Samuel's "gener-
+alization learning" program for the game of checkers
+[2] we find a novel heuristic technique which could be
+regarded as a simple example of the "expectation rein-
+forcement" notion. Let us review very briefly the situa-
+tion in playing two-person board games of this kind. As
+noted by Shannon [3] such games are in principle finite,
+and a best strategy can be found by following out all
+possible continuations-if he goes there I can go there,
+or there, etc.-and then "backing-up" or "minimax-
+ing" from the terminal positions, won, lost, or drawni.
+But in practice the
+full exploration of the resulting
+colossal "move-tree" is out of the question. No doubt,
+some exploration
+will always be necessary
+for such
+games. But the tree must be pruned. We might simply
+put a limit on depth of exploration-the number of
+moves and replies. We might also limit the number of
+alternatives explored from each position-this requires
+some heuristics for selection
+of "plausible moves."17
+Now,
+if the backing-up technique is still to be used
+(with the incomplete move-tree) one has to substitute
+for the absolute "win, lose, or draw" criterion some
+other
+"static" way
+of evaluating nonterminal
+posi-
+tions."8 (See Fig. 10.) Perhaps the simplest scheme is
+to use a weighted sum of some selected set of "property"
+functions
+of
+the
+positions-mobility,
+advancement,
+center control, and the like. This is done in Samuel's
+program, and in most of its predecessors. Associated
+with this is a multiple-simultaneous-optimizer method
+16 See also ch. 6 of [471.
+17 See the discussion of Bernstein [481 and the more extensive re-
+view and discussion in the very suggestive paper of Newell, Shaw, and
+Simon [49]; one should not overlook the pioneering paper of Newell
+[501, and Samuel's discussion of the minimaxing process in [2].
+18 In some problems the backing-up process can be handled in
+closed analytic form so that one may be able to use such methods as
+Bellman's "Dynamic Programming" [51]. Freimer [521 gives some
+examples for which limited "look-ahead" doesn't work.
+1961
+19
+PROCEEDINGS OF THE IRE
+4 z
+MAX
+MIN
+MAX
+MIN
+MAX
+Fig. 10-"Backing-up" the static evaluations of proposed moves in a
+g-ame-tree. From the vertex at the left, representing the present
+positioni in a board game, radiate three branches, representing
+the player's proposed moves. Each of these might be countered
+by a variety of opponent moves, and so on. According to some
+program, a finite tree is generated. Then the worth to the player
+of each terminal board position is estimated. (See text.) If the
+opponent has the same values, he will choose to miniimize the
+score, while the player will always try to maximize. The heavy
+lines show how this minimaxing process backs up until a choice is
+determined for the present position.
+The full tree for chess has the order of 10120 branches-beyond
+the reach of any man or computer. There is a fundamental heu-
+ristic exchange between the effectiveness of the evaluation func-
+tion and the extent of the tree. A very weak evaluation (e.g., one
+which just compares the players' values of pieces) would yield
+a devastating game if the machine could explore all continuLations
+ouit to, say, 20 levels. But only 6 levels, roughly within range of
+ouir presetntly largest computers, would probably not give a bril-
+lianit game; less exhaustive strategies, perhaps along the linles of
+[49], would be more profitable.
+for discovering a good coefficient assignment (usinig the
+correlation techniique noted in Sectioni III-A). But the
+source of reinforcement signals
+in
+[2 ]
+is novel. Onie
+canniiot afford to play out one or more entire games for
+each sinigle learning step. Samuel measures instead for
+each more the difference betweeni what the evaluation
+funiction
+yields directly of a position and what it pre-
+dicts oni the basis of an extenisive conitinuation explora-
+tioln, i.e., backinig-up. The signl of this error, "Delta," is
+used
+for reiniforcement;
+thus
+the system
+maxy
+learn
+somiiethinig at each move.19
+D) The Basic Credit-Assignment Problem for Complex
+Reinforcement Learning Systems
+In playinig a complex game such as chess or checkers,
+or in writing a computer program, one has a definite
+29 It should be noted that [2] describes also a rather successful
+checker-playing program based on recording and retrieving iniforma-
+tion about positionls encountered in the past, a less abstract way of
+exploiting past experience. Samuel's work is notable in the variety of
+experiments that were performed, with and without various heuris-
+tics. This gives an unusual opportunity to really find out how differ-
+ent heuristic methods compare. More workers should choose (other
+things being equal) problems for which such variations are practi-
+cable.
+success criterion-the game is woin or lost. But ill the
+course of play, each ultimlate success
+(or failure)
+is
+associated with a vast niumiiber of initeriial decisionis. If
+the run is successful, how canl we assignl credlit for the
+success among the multitude of decisions? As Newell
+noted,
+It is extremely doubtful whether there
+is enotugh informationi in
+"iwinl, lose, or draw" when referred to the whole play of the gamlie to
+permit any learning at all over available time scales.... For learnilng
+to take place, each play of the game must yield much more informa-
+tion. This is
+.
+. achieved by breakiing the problem into componienits.
+The uinit of success is the goal. If a goal is achieved, its subgoals are
+reinforced; if not they are inhibited. (Actually, what is reinforced is
+the transformation rule that provided the subgoal.)
+This also is
+true of the other kinds of structure: every tactic that is created pro-
+vides informationi about the success or failure of tactic search rules;
+every opponent's action provides information about success or failure
+of likelihood inferences; and so on. The amount of informatioil rele-
+vant to learning increases directly with the number of mechanlisms
+in the chess-playing machine.20
+We are in complete agreement with Newell onl this ap-
+proach to the problem.21
+It is my impression that many workers in the area of
+"self-organiizing" systems and "ranidomn neural niets" do
+not feel the urgency of this problem. Suppose that onie
+million decisions are involved in a complex task (such
+as winning a chess gamiie). Could we assign to each deci-
+sioIn element onie-millionith of the credit for the coin-
+pleted task? In certain special situations we caii do just
+this
+e.g., in the imiachinies of [22], [25] anid [92], etc.,
+where the connectionis being reinforced are to a suffi-
+cienit
+degree
+inidependent.
+But
+the
+problemii-solvinig
+ability is correspondingly weak.
+For more comuplex problems, with decisionis in hier-
+archies (rather thani summed oni the same level) anid
+with incremenits small enough to assure probable coni-
+vergenice, the runninig times would become fanitastic.
+For complex problems we will have to define "success"
+in some rich local sense. Some of the difficulty may be
+evaded by usinlg carefullv graded "traininig sequenices"
+as described in the following sectioni.
+Friedberg's Program- Writing Program: An imnportanit
+examiiple of comparative failure in this credit-assignmiiient
+matter is provided by the programii of Friedberg [53],
+[54] to solve programii-writinig problemns. The problemii
+here is to write progranms for a (simnulated) very simiiple
+digital comiiputer. A simlple probleml
+is assigned,
+e.g.,
+"comiipute the AND of two bits in storage anid put the
+result
+in ani assigned locationi." A genierating (levice
+produces a random (64-inistruction) programn. The pro-
+gram
+is runi anid its success or failure
+is nioted. The
+success iniformation is used to reiniforce individutal in-
+structions (in fixed locationis) so that each success tenids
+to ii1crease the chanice that the instructioins of successful
+programs will appear in later trials. (We lack space
+for details of how- this is done.) Thus the programii tries
+20 See p. 108 of [501.
+21 See also the discussion in Samuel (p. 22 of [21) oni assigning
+credit for a change in "Delta."
+Janit.ary
+270
+Minsky: Steps Toward A rtificial Intelligence
+to find "good" instructions, more or less independently,
+for each location in program memory. The machine did
+learn to solve some extremely simple problems. But it
+took of the order of 1000 times longer than pure chance
+would expect. In part II of [54], this failure is discussed,
+and attributed in part to what wxe called (Section I-C)
+the "Mesa phenomena." In changing just one instruc-
+tion at a time the machine had not taken large enough
+steps in its search through program space.
+The second paper goes on to discuss a sequence of
+modifications in the program generator and its rein-
+forcement operators. With these, and with some "prim-
+ing" (starting the machine off on the right track with
+some useful instructions), the system came to be only a
+little worse than chance. The authors of [54] conclude
+that with these improvements "the generally superior
+performance of those machines with a success-number
+reinforcement mechanism over those without does serve
+to indicate that such a mechanism can provide a basis
+for constructing a learning machine."
+I disagree with
+this conclusion. It seems to me that each of the "im-
+provements" can be interpreted as serving only to in-
+crease the step size of the search, that is, the random-
+ness of the mechanism; this helps to avoid the Mesa
+phenomenon and thus approach chance behavior. But
+it certainly does not show that the "learning mech-
+anism"
+is working-one would want at least to see
+some
+better-than-chaiice
+results
+before arguing
+this
+point. The trouble, it seems, is with credit-assignment.
+The credit for a working program can only be assigned
+to functional groups of instructionis, e.g., subroutines,
+and as these operate in hierarchies we should not expect
+individual instruction reinforcement to work well.22 It
+seems surprising that it was not recognized
+in
+[54]
+that the doubts raised earlier were probably justified!
+In the last section of [54] we see some real success ob-
+tained by breaking the problem into parts and solving
+them sequentially. (This successful demonstration us-
+ing division into subproblems does not use any rein-
+forcement mechanism
+at
+all.) Some experiments
+of
+similar nature are reported in [94].
+It is my conviction that no scheme for learning, or
+for pattern-recognition, can have very general utility
+unless there are provisions for recursive, or at least hier-
+archical, use of previous results. We cannot expect a
+learning system to come to handle very hard problems
+without preparing it with a reasonably graded sequence
+of problems of growing difficulty. The first problem
+must be one which can be solved in reasonable time
+with the initial resources. The next must be capable of
+solution in reasonable time by using reasonably simple
+and accessible combinations of methods developed in
+the first, and so on. The only alternatives to this use of
+an adequate "training sequence" are 1) advanced re-
+sources, given initially, or 2) the fantastic exploratory
+22See the introduction to [53] for a thoughtful discussion of the
+plausibility of the scheme.
+processes found perhaps only in the history of organic
+evolution.23 And even there, if we accept the general
+view of Darlington [56] who emphasizes the heuristic
+aspects of genetic systems, we mlust have developed
+early (in, e.g., the phenomena of meiosis and crossing-
+over) quite highly specialized mechanisms providing for
+the segregation of groupings related to solutions of sub-
+problems. Recently, much effort has been devoted to
+the construction of trainiing sequences in connection
+with programming "teaching machines." Naturally, the
+psychological literature abounds with theories of how
+complex behavior is built up from simpler. In our own
+area, perhaps the work of Solomonoff [55], while overly
+cryptic, shows the most thorough consideration of this
+dependency on training sequences.
+IV. PROBLEM-SOLVING AND PLANNING
+Summary-The solution, by machine, of really complex problems
+will require a variety of administration facilities. During the course
+of solving a problem, one becomes involved with a large assembly of
+interrelated subproblems. From these, at each stage, a very few must
+be chosen for investigation. This decision must be based on 1) esti-
+mates of relative difficulties and 2) estimates of centrality of the dif-
+ferent candidates for attention. Following subproblem selection (for
+which several heuristic methods are proposed), one must choose
+methods appropriate to the selected problems. But for really difficult
+problems, even these step-by-step heuristics for reducing search
+will fail, and the machine must have resources for analyzing the
+problem structure in the large-in short, for "planning." A number
+of schemes for planning are discussed, among them the use of
+models-analogous, semantic, and abstract. Certain abstract models,
+"Character Algebras," can be constructed by the machine itself, on
+the basis of experience or analysis. For concreteness, the discussion
+begins with a description of a simple but significant system (LT)
+which encounters some of these problems.
+A. The "Logic Theory" Program of Newell,
+Shaw and Simon
+It is not surprising that the testing grounds for early
+work
+on
+mechanical
+problem-solving
+have
+usually
+been areas of mathematics, or games, in which the rules
+are defined with absolute clarity. The "Logic Theory"
+machine of [57],
+[58], called "LT" below, was a first
+attempt to prove theorems in logic, by frankly heuristic
+methods. Although the program was not by human
+standards a brilliant success (and did not surpass its de-
+signers), it stands as a landmark both in heuristic pro-
+gramming and also in the development of modern auto-
+matic programming.
+The problem domain here is that of discovering proofs
+in the Russell-Whitehead system for the propositional
+calculus. That system is given as a set of (five) axioms
+and (three) rules of inference; the latter specify how
+23 It should, however, be possible to construct learninig mecha-
+nisms which can select for themselves reasonably good training se-
+quences (from an always complex environment) by pre-arranging a
+relatively slow development (or "maturation") of the system's facili-
+ties. This might be done by pre-arranging that the sequence of goals
+attempted by the primary Trainer match reasonably well, at each
+stage, the complexity of performance mechanically available to the
+pattern-recognition and other parts of the system. One might be able
+to do much of this by simply limiting the depth of hierarchical activ-
+ity, perhaps only later permitting limited recursive activity.
+1961
+21
+PROCEEDINGS OF THE IRE
+certain transformiiationis can be applied to produce niew
+theorems fromn old theorems and axioms.
+The LT program is ceintered around the idea of "work-
+inig backwards" to finid a proof. Giveni a theorein T to
+be proved, LT searches anmonig the axioms anid previ-
+ously established theorems for onie from which T canl
+be deduced by a single application of onie of three simple
+"Methods" (which embody the giveni rules of iniferenice).
+If onie is found, the problem is solved. Or the search
+might fail completely. But finially, the search may vield
+onie or more
+"problems" which are usually proposi-
+tionls from which T may be deduced directly. If one of
+these can, in turn, be proved a theoremn the maini prob-
+lem will be solved. (The situationi is actually slightly
+more complex.) Each such subproblem
+is adjoinied to
+the "subproblem list" (after a limited preliminary at-
+tempt) and LT works arounid to it later. The full power
+of LT, such as it is, can be applied to each subproblem,
+for LT cani use itself as a subroutinie in a recursive
+fashion.
+The heuristic technique of working backwards yields
+somnething of a teleological process, anid LT is a fore-
+runniier of more complex systems which conistruct hier-
+archies of goals and subgoals. Eveni so, the basic ad-
+miniistrative structure of the program is Ino more than
+a inested set of searches through lists in memory. We
+shall first outlinie this structure anid theni menitioni a few
+heuristics that were used in attemiipts to improve per-
+formanice.
+1) Take the inext problem froml problem list.
+(If there are no more problems, EXIT with total
+failure.)
+2) Choose the next of the three basic Methods.
+(If nio more mnethods, go to 1.)
+3) Choose the next member of the list of axiomns and
+previous theorems.
+(If no more, go to 2.)
+Then apply the Method to the problem, usinig the
+chosen theorem or axionm.
+If problem is solved, EXIT with complete proof.
+If nio result, go to 3.
+If new subproblemi arises, go to 4.
+4) Try the special (substitutioni) Method on the sub-
+problem.
+If problem is solved, EXIT with complete proof.
+If no result, put the subproblem at the end of the
+problem list and go to 3.
+Among the heuristics that were studied were 1) a
+similarity test to reduce the work in step 4 (which in-
+cludes another search through the theorem list), 2) a
+simplicity test to select apparently easier problems from
+the problem list, and 3) a strong nonprovability test to
+remove from the problenm
+list expressiotns which are
+probably false atnd hence not provable. In a series of
+experiments "learning"' was used to find which earlier
+theorems had been most useful and should be given
+priority in step 3. We cainnot review the effects of these
+chaniges in detail. Of interest was the balanice between
+the extra cost for adminiistrationi of certaini heuristics
+and the resultanit search reduction; this balanice was
+quite delicate in some cases when computer memory
+became saturated. The system seemed
+to
+be quite
+sensitive to the traininig sequence -the order in which
+problems were given. And some heuristics which gave
+nio significant over-all improvemenit did nievertheless
+affect the class of solvable problems. Curiously enlough,
+the genieral efficiency of LT was nlot greatly improvedl
+by any or all of these devices. But all this practical ex-
+perienice is reflected in the design of the mluch imiore so-
+phisticated "GPS" system described brieflyt in Section
+IV-D, 2).
+WTang
+[59] has criticized
+the LT project
+oni the
+grounds that there exist, as he anid others have showni,
+mechanized proof methods which, for the particular
+runi of problems coinsidered, use far less machinie effort
+than does LT and which have the advantage that they
+will ultimately find a proof for any provable proposi-
+tioIn. (LT does inot have this exhaustive "decisioni pro-
+cedure" character anid can fail ever to finid proofs for
+somne theoreimis.) The authors of [58], perhaps unaware
+of the existenice of eveni moderately efficienit exhaustive
+methods, supported
+their argunmenits by
+comiiparison
+with
+a particularly
+iniefficienit exhaustive
+procedeire.
+Nevertheless,
+I feel that some of \NVang's criticismiis are
+misdirected. He does niot seem to recogiiize that the
+authors of LT are n1ot so much initerested in provinig
+these theoremiis as they are in the genieral problenm of
+solving difficult problemiis. The combitnatorial system of
+Russell anid Whitehead (with which LT cleals)
+is far
+less simple anid eleganit thani the system used byWang
+g.24
+(Note,
+e.g., the emphasis in
+[49] and
+[60].)
+WVang's
+problems, while logically equivalent, are formally mtuch
+simnpler. His methods do inot iniclude any facilities for
+usinig previous results (henice theyt are sure to degrade
+rapidly at a certaini level of problem conmplexity), while
+LT
+is funidamenitally- orienited around
+this probleml.
+Finallv, because of the verv effectiveniess of Wanig's
+method oni the particular set of theoremls in questiotn,
+he simply did inot have to face the futndan1enital heuristic
+problem of when to decide to give utp on a linle of attack.
+Thus the formidable performanice of his program
+[59]
+perhaps diverted his attenitioni fromii heuristic problems
+that must againl sprinig up wheni real mathemuatics is
+ultimatelyr enicountered.
+This is niot meant as a rejectioii of the importanice of
+Waiig's work and discussion. He aind others workinig oni
+"nmechaniical mathematics" have discovered that there
+are proof procedures which are much more efficienit
+thani has beeni suspected. Such work will uniquestion-
+ably
+help
+in
+conistructinig
+intelligenit machinies,
+anid
+24 Wang's procedure [591 too, works backwards, and can be re-
+garded as a generalization of the method of "falsification" for decid-
+ing truth-functional tautology. In 1931 and its unpublished sequel,
+Wang introduces more powerful methods (for much more difficult
+problems).
+22
+Januabry
+Minsky: Steps Toward Artificial Intelligence
+these procedures will certainly be preferred, when avail-
+able, to "unreliable heuristic methods." Wang, Davis
+and Putnam, and several others are now pushing these
+new techniques into the far more challenging domain
+of theorem-proving in the predicate calculus (for which
+exhaustive decision procedures are no longer available).
+We have no space to discuss this area,25 but it seems
+clear that a program to solve real mathematical prob-
+lems will have to combine the mathematical sophistica-
+tion
+of Wang
+with
+the
+heuristic
+sophistication
+of
+Newell, Shaw and Simon.26
+B. Heuristics for Subproblem Selection
+In designing a problem-solving
+system,
+the
+pro-
+grammer often comes equipped with a set of more or
+less distinct "Methods"-his real task
+is to find an
+efficient way for the program
+to decide where and
+when the different methods are to be used.
+Methods which do not dispose of a problem may still
+transform it to create new problems or subproblems.
+Hence, during the course of solving one problem we may
+become involved with a large assembly of interrelated
+subproblems. A "parallel" computer, yet to be con-
+ceived, might work on many at a time. But even the
+parallel machine must have procedures to allocate its re-
+sources because it cannot simultaneously apply all its
+methods to all the problems. We shall divide this ad-
+ministrative problem into two parts: the selection of
+those subproblem(s) which seem most critical, attrac-
+tive, or otherwise immediate, and, in the next section,
+the choice of which method to apply to the selected
+problem.
+In the basic program for LT (Section IV-A), sub-
+problem selection is very simple. New problems are
+examined briefly and (if not solved at once) are placed
+at the end of the (linear) problem list. The main pro-
+gram proceeds along this list (step 1), attacking the
+problems in the order of their generation. More power-
+ful systems will have to be more judicious (both in
+generation and selection of problems) for only thus can
+excessive branching be restrained.27 In more complex
+systems we can expect to consider for each subproblem,
+at least these two aspects: 1) its apparent "centrality"
+how
+will
+its solution promote the main goal, and
+2) its apparent "difficulty"-how much effort is it lia-
+ble to consume. We need heuristic methods to estimate
+each of these quantities and, further, to select accord-
+ingly one of the problems and allocate to it some rea-
+25 See [611 and [931.
+2' All these efforts are directed toward the reduction of search
+effort. In that sense they are all heuristic programs. Since practically
+no one still uses "heuristic" in a sense opposed to "algorithmic,"
+serious workers might do well to avoid pointless argument on this
+score. The real problem is to find methods which significantly delay
+the apparently inevitable exponential growth of search trees.
+27 Note that the simple scheme of LT has the property that each
+generated problem will eventually get attention, even if several are
+created in a step 3. If one were to turnfull attention to each problem,
+as generated, one might never rettirn to alternate branches.
+sonable quantity of effort.2'8 Little enough
+is known
+about these matters, and so it is not entirely for lack of
+space that the following remarks are somewhat cryptic.
+Imagine that the problems and their relations are
+arranged to form some kind of directed-graph structure
+[14],
+[57],
+[62]. The main problem is to establish a
+"valid" path between two initially distinguished nodes.
+Generation of new problems is represented by the addi-
+tion of new, not-yet-valid paths, or by the insertion of
+new nodes in old paths. Then problems are represented
+by not-yet-valid paths, and "centrality" by location in
+the structure. Associate with each connection, quanti-
+ties describing its current validity state (solved, plau-
+sible, doubtful, etc.) and its current estimated difficulty.
+1) Global Methods: The most general problem-selec-
+tion methods are "global"
+at each step they look over
+the entire structure. There is one such simple scheme
+which works well on at least one rather degenerate in-
+terpretation of our problem graph. This is based on an
+electrical analogy suggested to us by a machine de-
+signed by Shannon (related to one described in [63]
+which describes quite a variety of interesting game-
+playing and learning machities) to play a variant of the
+game marketed as "Hex" (and known amonig mathe-
+maticians as "Nash"). The initial board position can
+be represented as a certain network of resistors. (See
+Fig.
+11.) One player's goal
+is to construct a short-
+circuit path between two given boundaries; the op-
+ponent tries to open the circuit between them. Each
+move consists of shorting (or opening), irreversibly, one
+of the remaining resistors. Shannon's machinie applies a
+potential
+between
+the
+boundaries and
+selects
+that
+resistor which carries the largest current. Very roughly
+speaking, this resistor is likely to be most critical be-
+cause changing it will have the largest effect on the re-
+t
+4
+7
+3
+6
+9
+Fig. 11-This board game (due to C. E. Shannon) is played on a nlet-
+work of equial resistors. The first player's goal is to open the circuit
+between the endpoints; the second player's goal is to short the cir-
+cuit. A move consists of opening or shorting a resistor. If the first
+player begins by opening resistor
+1, the second player might
+counter by shorting resistor 4, following the strategy described in
+the text. The remaining move pairs (if both players use that
+strategy) would be (5, 8) (9, 13) (6, 3) (12, 10 or 2) (2 or 10 win).
+In this game the first player should be able to force a win, and the
+maximum-current strategy seems always to do so, even on larger
+networks.
+28 One will want to see if the considered problem is the same as
+one already considered, or very similar. See the discussion in [621.
+This problem might be handled more generally by simply remember-
+ing the (Characters of) problems that have been attacked, and
+checking new ones against this memory, e.g., by methods of [311,
+looking more closely if there seems to be a match.
+1961
+23
+PROCEEDINGS OF THE IRE
+sistance of the net and, hence, in the goal direction of
+shorting (or openinig) the circuit. And although this ar-
+gument is not perfect, nor is this a perfect model of the
+real combinatorial situation, the machine does play ex-
+tremely well. (It can make unsound moves in certain
+artificial situationis, but no one seems to have been able
+to force this during a game.)
+The use of such a global method for problem-selec-
+tion requires that the available "difficulty estimates"
+for related subproblems be arranged
+to combine in
+roughly the manner of resistanice values. Also, we could
+regard this machine as using an "analog model" for
+"'planninig." (See Sectioni IV-D.) 29
+2) Local, and "Ilereditary," Methods: The prospect of
+havinig to study at each step the whole problem struc-
+ture is discouraginig, especially since the structure usu-
+ally changes only slightly after each attempt. One nat-
+urally looks for methods which merely update or modify
+a small fragmenit of the stored record. Between the ex-
+tremes
+of
+the
+"first-come-first-served"
+problem-list
+method aind the full global-survey methods, lie a variety
+of compromise techniques. Perhaps the most attractive
+of these are what we will call the Inheritance methods
+-essentially recursive devices.
+In ani Inheritanice method, the effort assigned to a
+subproblem
+is determinled only by its immediate an-
+cestry; at the tinme each problem is created it is as-
+signied a certaini total quanitity Q of time or effort. When
+a problem is later split inito subproblems, such quanti-
+ties are assigiied to them by some local process which
+depends only on their relative merits and on what remains
+of Q. Thus the cenitrality problem is maniaged implicitly.
+Such schemnes are quite easy to program, especially with
+the niew programminig systems such as IPL [64] anid
+LISP
+[32 ]
+(which
+are thetmiselves based on certain
+hereditary or recursive operationis). Special cases of the
+iniheritanice miiethod arise wheni onie canl get along with a
+simiple
+all-or-nionie
+Q,
+e.g.,
+a
+"stop condition"
+this
+yields the exploratorynmethod called "back-trackinig"
+by Golumb [65 ]. The decoding procedure of Wozenicraft
+[66]
+is
+another
+imiiportant
+variety
+of
+Inheritanice
+method.
+Iln the complex exploration process proposed for chess
+by Newell, Shaw, and Simloni [49] we have a form of
+Inheritanice method with a non-numerical stop-condi-
+tion. Here, the subprobleimis iniherit sets of goals to be
+achieved. This teleological conitrol has to be admiinistered
+by ani additionial goal-selectioni system and
+is further
+comiiplicated by a global (but reasoniably simple) stop
+rule of the backing-up variety [Section III-C]. (Note:
+we are identifying here the move-tree-limitation prob-
+lemii with that of problem-selection.) Eveni though ex-
+tenisive experimental results are not yet available, we
+feel that the scheme of [49] deserves careful study by
+29 A variety of combinatorial methods will be matched against
+the network-analogy opponient ini a program being completed by R.
+Silver, Lincoln Lab., M.I.T., Lexinigton, Mass.
+anyone planning serious work in this area. It shows
+only the beginning of the complexity sure to come iti
+our developmenit of intelligent machinies.30
+C. "Character-Method" Machines
+Once a problem is selected, we must decide which
+method to try first. This depends oni our ability to
+classify or characterize problems. We first compute the
+Character of our problem (by usinig some patterni recog-
+nition
+techniique)
+and
+theni
+conisult
+a
+"Character-
+M\lethod" table or other device which is supposed to tell
+us which method(s) are most effective oni problemns of
+that Character. This informationi might be built up
+from experienice, given initially by the programmiiiier, de-
+duced from "advice"
+[70], or obtainied as the solutioni
+to some other problem, as suggested in the GPS pro-
+posal [68]. In any case, this part of the machinie's be-
+havior, regarded from the outside, canl be treated as a
+sort of stimulus-responise, or "table look-up," activity.
+If the Characters (or descriptionis) have too wide a
+variety of values, there will be a serious problem of fill-
+inig a Character-Method table. One miiight theni have to
+reduce the detail of iniforn1atioin, e.g., by usinig only a
+few importanit properties. Thus the Differences of GPS
+[see Sectioni IV-D, 2) ] describe ino mnore thani is iieces-
+sary to define a single goal, aind a priority schem-iie se-
+lects
+j ust olle of these to characterize the situationi.
+Gelernter and Rochester [62] suggest usinig a property-
+weightinig schemne, a special case of the "Bayes niet"
+described in Section II-G.
+D. Planning
+Ordinarily onie can solve a complicated problemii only
+by dividing it into a number of parts, each of which cani
+be attacked by a smaller search (or be further divided).
+Generally speaking, a successful divisioni will reduce the
+search time not by a mere fractioni, but by a Jfractional
+exponenit. In a graph with 10 branches descenidinig from
+each niode, a 20-step search might inivolve 1020 trials,
+which is out of the questioni, while the inisertioni of just
+four lemmas or sequential subgoals might reduce the
+search to only 5.104 trials, which is withini reasoni for
+machitne explorationi. Thus it will be worth a relativelx-
+enormous effort to find such "islanids" in the solutioni of
+complex problems.3' Note that eveni if onie enicouniterecd,
+say, 106 failures of such procedures before success, onie
+would still have gainied a factor of perhaps 1010 in over-
+all trial reductioni! Thus practically any ability at all to
+"plan," or "analyze," a problem will be profitable, if the
+problem is difficult. It is safe to say that all simple, unii-
+tary, notionis of how to build anl intelligenit machiine wNill
+fail, rather sharply, for somle modest level of problemii
+difficulty. Onlxy schemes which actively pursue anl ani-
+alysis toward obtainiing a set of sequential goals cani be
+3 Some further discussioll of this qutestioni may be fotntd
+ill
+Slagle [671.
+31 See section 10 of [61.
+24
+January
+Minsky: Steps Toward A rtificial Intelligence
+expected to extend smoothly into increasingly complex
+problem domains.
+Perhaps the most straightforward concept of plan-
+ning is that of using a simplified model of the problem
+situation. Suppose that there is available, for a given
+problem, some other problem of "essentially the same
+character" but with less detail and complexity. Then
+we could proceed first to solve the simpler problem. Sup-
+pose, also, that this is done using a second set of meth-
+ods, which are also simpler, but in some correspondence
+with those for the original. The solution to the simpler
+problem can then be used as a "plan" for the harder one.
+Perhaps each step will have to be expanded in detail.
+But the multiple searches will add, not multiply, in the
+total search time. The situation would be ideal if the
+model were, mathematically, a homomorphism of the
+original. But even without such perfection the model
+solution should be a valuable guide. In mathematics
+one's proof procedures usually run along these lines;
+one first assunmes, e.g., that integrals and limits always
+converge, in the planning stage. Once the outline is
+completed,
+in
+this simple-minded
+model
+of mathe-
+matics, then one goes back to try to "make rigorous"
+the steps of the proof, i.e., to replace them by chains of
+argument using genuine rules of inference. And even if
+the plan fails, it may be possible to patch it by replac-
+ing just a few of its steps.
+Another aid to planning is the semantic, as opposed
+to the homomorphic, model [14],
+[9]. Here we may
+have an interpretation of the current problem within
+another system, not necessarily simpler, but with which
+we are more familiar and have already more powerful
+methods. Thus, in connection with a plan for the proof
+of a theorem, we will want to know whether the pro-
+posed lemmas, or islands in the proof, are actually true;
+if not, the plan will surely fail. We can often easily tell
+if a proposition is true by looking at an interpretation.
+Thus the truth of a proposition from plane geometry
+can be supposed,
+at least with great reliability, by
+actual measurement of a few constructed drawings (or
+the analytic geometry equivalent). The geometry ma-
+chine of Gelernter and Rochester [62], [69] uses such
+a semantic model with
+excellent
+results;
+it follows
+closely the lines proposed in [14].
+1) The "Character-Algebra" Model: Planning with the
+aid of a model is of the greatest value in reducing search.
+Can we
+construct machines which
+find
+their own
+models? I believe the following will provide a general,
+straightforward way to construct certain kinds of use-
+ful, abstract models. The critical requirement is that
+we be able to compile a "Character-Method Matrix"
+(in addition to the simple Character-Method table in
+Section IV-C). The CM matrix is an array of entries
+which predict with some reliability what will happen when
+methods are applied to problems. Both of the matrix
+dimensions are indexed by problem Characters; if there
+is a method which usually transforms problems of char-
+acter Ci into problems of character Cj then let the matrix
+entry C1i be the name of that method (or a list of such
+methods). If there is no such method the corresponding
+entry is null.
+Now suppose that there is no entry for Cij-meaning
+that we have no direct way to transform a problem of
+type Ci into one of type C1. Multiply the matrix by it-
+self. If the new matrix has a non-null (i, j) entry then
+there must be a sequence of two methods which effects
+the desired transformation.
+If that fails, we may try
+higher powers. Note that [if we put uniity for the (i, i)
+terms] we can reach the 2n matrix power with just n
+multiplications. We don't need to define the symbolic
+multiplication operation; one may instead use arith-
+metic entries
+putting unity for any non-null entry and
+zero for any null entry in the original matrix. This yields
+a simple connection, or flow diagram, matrix, and its
+nth power tells us something about its set of paths of
+length 28.32 (Once a non-null entry is discovered, there
+exist efficient ways to find the correspondinig sequenices
+of methods. The problem is really just that of findinig
+paths through a maze, and the method of Moore [71]
+would be quite efficient. Almost any problenm can be
+converted into a problem of finding a chaini between
+two terminal expressions in some formal system.)
+If
+the Characters are taken to be abstract representations
+of the problem expressions, this "Character-Algebra"
+model can be as abstract as are the available pattern-
+recognition facilities. See [14] and [9].
+The critical problem in using the Character-Algebra
+model for planning is, of course, the prediction-reliability
+of the matrix entries. One cannot expect the Character
+of a result to be strictly determined by the Character
+of the original and the method used. And the reliability
+of the predictions will, in any case, deteriorate rapidly
+as the matrix power is raised. But, as we have noted,
+any plan at all is so much better than nonie that the sys-
+tem should do very much better than exhaustive search,
+even with quite poor prediction quality.
+This matrix formulation is obviously onily a special
+case of the character planning idea. M\Iore generally,
+one will have descriptions, rather than fixed characters,
+and one must then have more general methods to calcu-
+late from a description what is likely to happeni when a
+method is applied.
+2) Characters and Differences: In the GPS (General
+Problem Solver) proposal of Newell, Shaw, and Simon
+[68], [15], we find a slightly different framework: they
+use a notion of Difference between two problems (or ex-
+pressions) where we speak of the Character of a sinigle
+problem. These views are equivalent
+if we take our
+problems to be links or connections betweeni expressions.
+But this notion of Difference (as the Character of a
+pair) does lend itself more smoothly to teleological rea-
+soning. For what is the goal defined by a problemn but
+to reduce the "difference" between the present state and the
+32See, e.g., [881.
+1961
+25,
+PROCEEDINGS OF TIHE IRE
+desired state? The underlying structure of GPS is pre-
+cisely what we have called a "Character-Method Ma-
+chinie" in which each kind of Differenice is associated in
+a table with onie or more methods which are known to
+"reduce"
+that
+Differenice. Since the characterization
+here depends always on 1) the current problem expres-
+siotn and 2) the desired end result, it is reasonable to
+think, as its authors suggest, of GPS as usinig "meains-
+enid" analysis.
+To illustrate the use of Differences, we shall review
+an example [15]. The problem, in elementary proposi-
+tional calculus, is to prove that from SA(-PDQ) we
+canl deduce (QVP) AS. The program looks at both of
+these expressions with
+a recursive matching process
+which braniches out from the main conn1ectives. The
+first Difference it enicouniters is that S occurs oII dif-
+ferenit sides of the main coinnective "A". It therefore
+looks in the Difference-Method table under the head-
+inig
+"chanige position."
+It discovers
+there a method
+which
+uses
+the theorem
+(A AB)
+(B AA)
+which
+is
+obviously useful for removinig, or "reducing," differ-
+enices of position. GPS applies this method, obtainintg
+(-PDQ) AS. GPS now asks what is the Differel1ce be-
+twreeni this niew expressioni anid the goal. This time the
+matchinig procedure gets downi inito the conniectives in-
+side the left-hand members and finids a Difference be-
+tw-eeni the coinnectives "D" anid "V". It n1ow looks in
+the CM table unider the headinig "Chanige Conniiective"
+and discovers the appropriate method usling (-ADB)
+=(A VB). It applies this miiethod, obtaininlg (PVQ) AS.
+In the final c-cle, the differenice-evaluatinig procedure
+discovers the nieed for a "change position1" inside the
+left
+member,
+anid
+applies
+a method
+using
+(A VB)
+-(BVA). This completes the solutioni of the problem.33
+EvidentlI, the success of this "imeanis-enid" anialI-sis in
+reducinig general search will depenid on1 the degree of
+specificity that
+cani be writteni
+in1to the
+Differenice-
+Method table-basically the same requiremenit for an
+effective Character-Algebra.
+It may be possible to plan usinig Differences, as well.3
+Onie might imagine a "Differenice-Algebra" in which the
+predictions have the form D=D'D". One must con1-
+struct accordinigly a difference-factorization algebra for
+discoverinig
+loniger
+chainis D=Di
+.
+. Dn
+anid
+corre-
+spondinig method planis. WN\e should note that onie can-
+not expect to use such planning methods with such
+primitive Differenices as are discussed in [15]; for these
+canniiot form ani adequate Difference-Algebra (or Char-
+acter Algebra). Unless the characterizing expression-s
+33 Compare this with the "matching" process described in [571.
+The notions of "Character," "Character-Algebra," etc., originate in
+[14] but seem useful in describing parts of the "GPS" system of [57]
+and [15]. Reference [15] contains much additional material we cannot
+survey here. Essentially, GPS is to be self-applied to the problem of
+discovering sets of Differences appropriate for given problem areas.
+This notion of "bootstrapping"-applying a problem-solving system
+to the task of improving some of its own methods-is old and famil-
+iar, but in [15] we find perhaps the first specific proposal about how
+such an advance might be realized.
+have many levels of descriptive detail, the miiatrix pow-
+ers will too swiftly become degenierate. This degetieracy
+will ultimately limit the capacity of any formcal plannlling
+device.
+Otne may thinik of the genieral planniinig heuristic as
+enmbodied in a recursive process of the followinig formii.
+Suppose we have a problemii P:
+1) Formi a plan- for problemii P.
+2) Select first (niext) step of the plan.
+(If nio more steps, exit with "success.")
+3) Try the suggested miiethod(s):
+Success: returni to b), i.e., try niext step in the
+plani.
+Failure: returni to a), i.e., form niew plani, or
+perhaps chanige currenit plani to avoid this
+step.
+Problemii judged too difficult: A-pply this entire
+proceditre to the problem of the cuirrent step.
+Observe that such a program scheina is essentially re-
+cursive; it uses itself as a subroutine (explicitly, in the
+last step) in such a way- that its currenit state has to be
+stored, anid restored wheni it returnis conitrol to itself.34
+\[/iller, Galaniter anid Pribram33 discuss possible an-
+alogies
+betweeni
+humani
+problemii-solvinig
+anid
+somiie
+heuristic planniinig schemes. It seemiis certaini that, for
+at least a few vears, there will be a close associationi be-
+tweeni theories of humiiani behavior aind attempts to ini-
+crease the initellectual capacities of miiachinies. But, in
+the lonig runi, we inust be prepared to discover profitable
+linies of heuristic programmiiiinig
+rhich
+(lo
+niot delib-
+eratelv imitate humani characteristics.36
+34 This violates, for example, the restrictions on "DO loops'
+in
+programming systems such as FORTRAN. Conivenient techniques
+for programniing such processes were developed by Newell, Shaw,
+and Simon [64]; the program state-variables are stored in "push-
+down lists" and both the program and the data are stored in the forn
+of "list-structures." Gelernter [69] extended FORTRAN to manage
+some of this. McCarthy has extended these notions in LISP [32] to
+pernmit explicit recursive definitions of programs in a language based
+on recursive functions of symbolic expressions; here the manage-
+3enit of program-state variables is fully automatic. See also Orchard-
+Hays' article in this issue.
+35 See chs. 12 and 13 of [461.
+36 Limitations
+of
+space
+preclude
+detailed
+discussion
+here
+of
+theories of self-organizing neural nets, and other models based on
+brain analogies. (Several of these are described or cited in [C] and
+[D].) This omission is not too serious, I feel, in connection with the
+subject of heuristic programming, because the motivation and meth-
+ods of the two areas seem so different. Up to the present time, at
+least, research on neural-net models has been concerned mainly with
+the attempt to show that certain rather simple heuristic processes,
+e.g.,
+reinforcement
+learning,
+or property-list
+pattern-recognition,
+can be realized or evolved by collections of simple elements without
+very highly organized interconnections. Work on heuristic programii-
+ming is characterized quite differently by the search for new, more
+powerful heuristics for solving very complex problems, and by very
+little concern for what hardware (neuronal or otherwise) would
+minimally suffice for its realization. In short, the work on "nets" is
+concerned with how far one can get with a small initial endowmnent;
+the work on "artificial intelligence" is concerned with using all we
+know to build the most powerful systems that we can. It is my ex-
+pectation that, in problem-solving power, the (allegedly brain-like)
+minimal-structure systems will never threaten to compete with their
+more deliberately designed contemporaries; nevertheless, their study
+should prove profitable in the development of component elements
+and subsystems to be used in the construction of the more system-
+atically conceived machines.
+26
+Janitary
+Minsky: Steps Toward Artificial Intelligence
+V. INDUCTION AND MODELS
+A. Intelligence
+In all of this discussion we have not come to grips
+with anything we can
+isolate as
+"intelligence." We
+have discussed only heuristics, shortcuts, and classifica-
+tion techniques. Is there something missing? I am con-
+fident that sooner or later we will be able to assemble
+programs of great problem-solving ability from com-
+plex combiniations of heuristic devices
+multiple opti-
+mizers,
+pattern-recognitioni
+tricks, planning algebras,
+recursive administration procedures, and the like. In
+no one of these will we find the seat of intelligence.
+Should we ask what intelligence "really is"? My owni
+view is that this is more of an esthetic question, or one
+of senise of dignity, than a technical nmatter! To me "in-
+telligenice" seems to denote little more than the complex
+of performances which we happen to respect, but do
+not understand. So it is, usually, with the question of
+"depth" in mathematics. Once the proof of a theorem
+is really understood its content seems to become trivial.
+(Still, there may remaini a sense of wonder about how
+the proof was discovered.)
+Programmers,
+too, know that there
+is never any
+"heart" in a program. There are high-level routines in
+each program, but all they do is dictate that "if such-
+and-such, then
+transfer
+to such-and-such a subrou-
+tine." And when we look at the low-level subroutines,
+which "actually do the work," we find senseless loops
+and sequences of trivial operations, merely carrying out
+the dictates of their superiors. The intelligence in such
+a system seems to be as intangible as becomes the mean-
+ing of a single common word when it is thoughtfully
+pron-ounced over and over again.
+But we should not let our inability to discern a locus
+of intelligence lead us to conclude that programmed
+computers therefore cannot think. For
+it may be so
+with man, as with machine, that, when we understand
+finally the structure and program, the feeling of mystery
+(and self-approbation) will weaken.37 We find similar
+views concerning "creativity" in [60 ]. The view expressed
+by Rosenbloom [73] that minds (or brains) can trans-
+cend machines is based, apparently, on an erroneous
+interpretation
+of the meaning of the
+"unsolvability
+theorems" of Godel.38
+B. Inductive Inference
+Let us pose now for our machines, a variety of prob-
+lems more challenging than any ordinary game
+or
+mathematical
+puzzle. Suppose that we want a ma-
+chine which, when embedded for a time in a complex
+environment or "universe," will essay to produce a
+description of that world-to discover its regularities
+or laws of nature. We might ask it to predict what will
+happen next. We might ask it to predict what would be
+the likely consequences of a certain action or experi-
+ment. Or we might ask it to formulate the laws govern-
+ing some class of events. In any case, our task is to
+equip our machine with inductive ability-with meth-
+ods which it can use to construct genieral statements
+about events beyond
+its recorded
+experienice. Now,
+there can be no system for inductive inference that will
+work well in all possible universes. But given a uniiverse,
+or an ensemble of universes, and a criterion of success,
+this (epistemological) problem for machines becomes
+technical rather than philosophical. There is quite a
+literature concerning this subject, but we shall discuss
+only one approach which currently seems to us the most
+promising; this is what we might call the "grammati-
+cal induction" schemes of Solomonoff [55], [16], [17],
+based partly on work of Chomsky and Miller
+[80],
+[81].
+We will take language to mean the set of expressionis
+formed from some given set of primitive symbols or
+expressions, by the repeated application of some given
+set of rules; the primitive expressions plus the rules is
+the grammar of the language. Most induction prob-
+lems can be framed as problems in the discovery of gram-
+mars. Suppose, for instance, that a machine's prior ex-
+perience is summarized by a large collection of state-
+ments, some labelled "good" and some "bad" by some
+critical device. How could we generate selectively more
+good statements? The trick is to find some relatively
+simple (formal) language in which the good statements
+are grammatical, and in which the bad ones are not.
+Given such a language, we can use it to generate more
+statements, and presumably these will tend to be more
+like the good ones. The heuristic argumenit is that if we
+can find a relatively simple way to separate the two sets,
+the discovered rule is likely to be useful beyonid the im-
+mediate experience. If the extension fails to be consisteint
+with new data, one might be able to make small chaniges
+in the rules and, generally, one may be able to use nmany
+ordinary problem-solving methods for this task.
+The problem of fiinding an efficient grammar is much
+the same as that of finding efficient encodings, or pro-
+37 See [141 and [9].
+38 On problems of volition we are in general agreement with Mc-
+Culloch [75] that our freedom of will "presumably means no more
+than that we can distinguish between what we intend [i.e., our plan],
+and some intervention in our action." See also MacKay (176] and its
+references); we are, however, unconvinced by his eulogization of
+"analogue"
+devices.
+Concerning the
+"mind-brain"
+problem, one
+should consider the arguments of Craik [771, Hayek [781 and Pask
+[791. Among the active leaders in modern heuristic programming,
+perhaps only Samuel [91] has taken a strong position against the
+idea of machines thinking. His argument, based on the fact that reli-
+able computers do only that which they are instructed to do, has a
+basic flaw; it does not follow that the programmer therefore has full
+knowledge (and therefore full responsibility and credit for) what will
+ensue. For certainly the programmer may set up an evolutionary
+system whose limitations are for him unclear and possibly incom-
+prehensible. No better does the mathematician know all the conse-
+quences of a proposed set of axioms. Surely a machine has to be in
+order to perform. But we cannot assign all the credit to its program-
+mer if the operation of a system comes to reveal structures not recog-
+nizable or anticipated by the programmer. While we have not yet
+seen much in the way of intelligent activity in machines, Samuel's
+arguments in [91] (circular in that they are based on the presumption
+that machines do not have minds) do not assure us against this.
+Turing [72] gives a very knowledgeable discussion of such matters.
+1961
+27
+PROCEEDINGS OF THE IRE
+grams, for machinies; in. each case, onie needs to discover
+the important regularities in the data, anid exploit the
+regularities by- making shrewd abbreviations. The possi-
+ble importanice of Solomoioff's work [18] is that, de-
+spite some obvious defects, it may point the way toward
+sN stematic mathematical ways to explore this discovery
+problem. He considers the class of all programls (for a
+giveni general-purpose computer) which will produce a
+certain given output (the body of data in question-).
+MVlost such programs, if allowed to continue, will add to
+that body of data. By properly weighting these pro-
+grams, perhaps by lenigth, we can obtaini correspotndinig
+weights for the differenit possible continiuations, anid thus
+a basis for prediction. If this prediction is to be of any
+interest, it will be necessary to show some inidepend-
+ence of the giveni computer; it is Inot yet clear precisely
+wNhat form such a result will take.
+C. Miodels of Oneself
+If a creature can answer a questioni about a hypotheti-
+cal experiment, without actually performinig that ex-
+perimenit, then the answer must have beeni obtainied
+from some submachinie inside the creature. The out-
+put of that submachinie (representinig a correct aniswer)
+as well as the iniput (represeniting the question) must be
+coded descriptions of the corresponidiing external evenits
+or event classes. Seen through this pair of enicoding and
+decoding chainnels, the initerinal submachine acts like
+the environmenit,
+anid
+so
+it has the character
+of a
+"model." The inductive iniference probleml may theni be
+regarded as the problem of constructing such a miiodel.
+To the extenit that the creature's actions affect the
+enivironment, this internial model of the world will nieed
+to iniclude some representation of the creature itself. If
+onie asks the creature "why did you decide to do such
+and such" (or if it asks this of itself), any aniswer must
+come from the internial model. Thus the evidence of
+initrospection itself is liable to be based ultimately on
+the processes used in conistructinig onie's imlage of onie's
+self. Speculatioin on the form of such a model leads to
+the amusinig prediction that initelligenit machines mlav
+be reluctant to believe that they are just machinies. The
+argument is this: our owIn self-models have a substan-
+tiallv "dual" character; there is a part concernied with
+the physical or mechanical enivironimenit-with the be-
+havior of inanimate objects
+anid there is a part coni-
+cernied with social and psychological matters. It is pre-
+cisely because we have not yet developed a satisfactory
+mechaniical theory of mental activity that we have to
+keep these areas apart. We could nlot give up this divi-
+sion1 even if we wished to
+until we find a unified model
+to replace it. Now, wheii we ask such a creature what
+sort of beinig it is, it canniiot simply answNer "directlv;"
+it must inispect its model(s). Anid it miust aniswer by
+sayinig that it seemiis to be a dual thinig
+which appears
+to have two parts
+a "iminiid" and a "body." Thus, eveni
+the robot, unless equipped with a satisfactory theory- of
+artificial initelligence, would have to maintami a dualistic
+opitnioIn on1 this matter.39
+CONCLUSION
+In attempting to combinie a survey of work on "arti-
+ficial initelligence" with a summary- of our own7 views,
+we could nlot mentioni every relevaInt project and pub-
+lication. Some important omIissionls are inl the area of
+"braini models"; the earlv work of Parley anid Clark
+[92]
+(also Farley's paper in
+[D], ofteni unkniowiniglx
+duplicated, and the work of Rochester [82] and Mjilner
+[D].) The work of Lettvini, et al. [83] is related to the
+theories in [19]. We did not touch at all oni the problemiis
+of logic and language,
+anid
+of ilnfornmationi
+retrieval,
+which must be faced when actioni is to be based oni the
+contents of large memories; see, e.g.,
+\'IcCarthy
+[70].
+We have niot discussed the basic results inl mathematical
+logic which bear on the questioni of what canl be donie by
+machinies. There are enltire literatures we have hardly7
+even sampled---the bold pionieerinig of Rashevsky
+(c.
+1929) anid his later co-workers [95 ]; Theories of Learl-
+inig,
+e.g., Gorni
+[84]; Theory of Gamiies,
+e.g., Shubik
+[85]; anid Psychology,
+e.g., Brunier,
+et al.
+[86]. Anld
+everyonie should kniow the wA,ork of Polva [87] oni how
+to solve problems. We canl hope only to have tranis-
+mitted the flavor of somne of the more amiibitious projects
+directly conicernied with gettinig n1achiines to take over
+a larger portioni of problenm-solvinig tasks.
+One last remiiark: we have discussed here onlv work
+conicerned
+with more or
+less self-contaMied problemii-
+solving programs. But as this is writteni, we are at last
+beginning to see vigorous activity in the directioni of
+conistructinig usable time-sharing or multiprogramming
+computinlg systems. With these systems, it will at last
+becomne econiomical
+to match
+humiiani
+beinigs
+in
+realI
+tinme with really large mlachinies. This miieanls that we
+canl work toward programminig what will be, in effect,
+"thinkinig aids." In the years to comiie, N-e expect that
+these man-machine systemls will share, anid perhaps for
+a time be domlliinant, ill our advanice toward the develop-
+menit of "artificial itntelligel1ce."
+39 There is a certaii problem of ifiinite regression in the niotionl of a
+machine having a good model of itself: of course, the nested models
+must lose detail and finally vanish. But the argumenit, e.g., of Hayek
+(See 8.69 and 8.79 of [781) that we cannot "fully comprehend the uniit-
+ary order" (of our own minds) ignores the power of recursive de-
+scription as well as Turing's demonstration that (with sufficient ex-
+ternal writing space) a "general-purpose" machine can answer any
+question about a description of itself that any larger machine could
+answer.
+28
+Janutary
+Minsky: Steps Toward Artificial Intelligence
+B IBLITOGRAPHY4
+[1]
+J. McCarthy, "The inversion of functions defined by Turing
+machines," [B].
+[2] A. L. Samuel, "Some studies in machine learning using the game
+of checkers, " IBMJ. Res. &Dev.,vol. 3,pp. 211-219;July, 1959.
+[3] C. E. Shannon, "Programming a digital computer for playing
+chess," [K].
+[4] C. E. Shannon, "Synthesis of two-terminal switching networks,"
+Bell Sys. Tech. J., vol. 28, pp. 59-98; 1949.
+[5] W. R. Ashby, "Design for a Brain," John Wiley and Sons, Inc.,
+New York, N. Y.; 1952.
+[6] W. R. Ashby, "Design for an intelligence amplifier," [B].
+[7] M. L. Minsky and 0. G. Selfridge, "Learning in random nets,"
+[H].
+[8] H. Sherman, "A quasi-topological method for machine recogni-
+tion of line patterns," [E].
+[9] M. L. Minsky, "Some aspects of heuristic programming and
+artificial intelligence," [C].
+[10] W. Pitts and W. S. McCulloch, "How we know universals,"
+Bull. Math. Biophys., vol. 9, pp. 127-147; 1947.
+[11] N. Wiener, "Cybernetics," John Wiley and Sons,
+Inc., New
+York, N. Y.; 1948.
+[12] 0. G. Selfridge, "Pattern recognition and modern computers,"
+[A].
+[13] G. P. Dinneen, "Programming pattern recognition," [A].
+[14] M. L. Minsky, "Heuristic Aspects of the Artificial Intelligence
+Problem,"
+Lincoln
+Lab.,
+M.I.T.,
+Lexington,
+Mass.,
+Group
+Rept.
+34-55,
+ASTIA
+Doc.
+No.
+236885;
+December,
+1956.
+(M.I.T. Hayden Library No. H-58.)
+[15] A. Newell, J. C. Shaw, and H. A. Simon, "A variety of intelli-
+gence learning in a general problem solver," [D].
+[16] R. J. Solomonoff, "The Mechanization of Linguistic Learning,"
+Zator Co., Cambridge, Mass., Zator Tech. Bull. No. 125, pre-
+sented
+at
+the
+Second
+Internatl.
+Congress
+on
+Cybernetics,
+Namur, Belgium; September, 1958.
+[17] R. J. Solomonoff, "A new method for discovering the grammars
+of phrase structure languages," [E].
+[18] R. J. Solomonoff, "A Preliminary Report on a General Theory
+of Inductive Inference," Zator Co., Cambridge, Mass., Zator
+Tech. Bull. V-131; February, 1960.
+[19]
+0. G. Selfridge, "Pandemonium: a paradigm for learning," [C].
+[20] 0.
+G.
+Selfridge
+and
+U.
+Neisser,
+"Pattern
+recognition by
+machine," Sci. Am., vol. 203, pp. 60-68; August, 1960.
+[21] S. Papert, "Some mathematical models of learning," [H].
+[22] F. Rosenblatt, "The Perceptron," Cornell Aeronautical Lab.,
+Inc., Ithaca, N. Y., Rept. No. VG-1196-G-1; January, 1958. See
+also the article of Hawkins in this issue.
+[23] W. H. Highleynman and L. A. Kamentsky, "Comments on
+a
+character recognition method of Bledsoe and Browning" (Cor-
+respondence), IRE TRANS. ON ELECTRONIC COMPUTERS,
+vol.
+EC-9, p. 263; June, 1960.
+[24] W. W. Bledsoe and
+I. Browning, "Pattern recognition and read-
+ing by machine," [F].
+[25] L. G. Roberts, "Pattern recognition with an adaptive network,"
+1960 IRE INTERNATIONAL CONVENTION RECORD, pt. 2, pp. 66-
+70.
+[26] W. Doyle, "Recognition of Sloppy, Hand-Printed Characters,"
+Lincoln Lab., M.I.T., Lexington, Mass., Group Rept. 54-12;
+December, 1959.
+[27] R. A. Kirsch, C. Ray, L. Cahn, and G. H. Urban, "Experiments
+in Processing Pictorial Information with a Digital Computer,"
+Proc. EJCC, PROC. IRE, pp. 221-229; December, 1957.
+[28] A. M. Uttley, "Conditional probability machines," and "Tem-
+poral and spatial patterns in a conditional probability machine,"
+[B].
+[29] A. M. Uttley, "Conditional probability computing in a nervous
+system," [C].
+[30] C. N. Mooers, "Information retrieval on structured content,"
+[J].
+40 Bibliographic note: Work in this area seems to be currently
+prominent in the following periodicals:
+1) IBM J.Res.&Dev.
+2) Information and Control.
+3) Proc. EJCC and WJCC (EASTERN
+AND WESTERN JOINT
+COMPUTER CONFS.)
+4) IRE NATIONAL CONVENTION RECORD.
+5) J. Assoc. Comp. Mach. (J. A CM).
+6) Trans. Assoc. Comp. Mach.
+7) IRE TRANS. ON INFORMATION THEORY.
+A more informative bibliography, compiled by the present author,
+should
+appear
+shortly in
+the IRE TRANS. ON HUMAN FACTORS
+IN
+ELECTRONICS.
+[311 C. N. Mooers, "Zatocoding and developments in information
+retrieval," Aslib Proc., vol. 8, pp. 3-22; February, 1956.
+[32] J. McCarthy, "Recursive functions of symbolic expressions," [G].
+[331 J. S. Bomba, "Alpha-numeric character recognition using local
+operations," [F].
+[34] R. L. Grimsdale, et al., "A system for the automatic recognition
+of patterns," Proc. IEE, vol. 106, pt. B; March, 1959.
+[35] S. H. Unger, "Pattern detection and recognition," PROC. IRE,
+vol. 47, pp. 1737-1752; October, 1959.
+[36] J. H. Holland, "On iterative circuit computers constructed of
+microelectronic components and systems," Proc. WJCC, pp.
+259-265; 1960.
+[37] D. 0. Hebb, "The Organization of Behavior," John Wiley and
+Sons, Inc., New York, N. Y.; 1949.
+[38] W. Kohler, "Gestalt Psychology," Mentor, No. MD 279; 1947.
+[39] N. Haller, "Line Tracing for Character Recognition," M.S.E.E,
+thesis, M.I.T., Cambridge, Mass.; 1959.
+[40] 0. N. Minot, "Automatic Devices for Recognition of Visible
+Two-dimensional Patterns: A Survey of the Field," U. S. Naval
+Electronics Lab., San Diego, Calif., Tech. Memo. 364; June 25,
+1959.
+[41] M. E. Stevens, "A Survey of Automatic Reading Techniques,"
+NBS, U. S. Dept. of Commerce, Washington, D. C., Rept. 5643;
+August, 1957.
+[42] N.
+Tinbergen,
+"The Study
+of
+Instinct," Oxford University
+Press, New York, N. Y.; 1951.
+[43] 0. G. Selfridge, "Pattern recognition and learning," [J].
+[44] B. F. Skinner, "Science and Human Behavior," The Macmillan
+Co., New York, N. Y.; 1953.
+[45] R. R. Bush and F. Mosteller, "Stochastic Models For Learning,"
+John Wiley and Sons, Inc., New York, N. Y.; 1955.
+[46] G. A. Miller, E. Galanter, and K. H. Pribram, "Plans and the
+Structure of Behavior," Henrv Holt and Co.,
+Inc., New York,
+N. Y.; 1960.
+[47] M. L. Minsky, "Neural Nets and the Brain Model Problem,"
+Ph.D. dissertation, Princeton Univ., Princeton, N. J.;
+1954.
+(University Microfilms, Ann Arbor.)
+[48] A. Bernstein, et al., "A chess playing program for the IBM 704,"
+Proc. WJCC, pp. 157-159; 1958.
+[49] A. Newell, J. C. Shaw, and H. A. Simon, "Chess-playing pro-
+grams and the problem of complexity," IBM J. Res. & Dev.,
+vol. 2, p. 320 ff.; October, 1958.
+[50] A. Newell, "The chess machine," [A].
+[51] R. Bellman, "Dynamic Programming," Princeton University
+Press, Princeton, N. J.; 1957.
+[52] M. Freimer, "Topics in Dynamic Programming II," Lincoln
+Lab., M.I.T., Lexington, Mass., Rept. 52-G-0020; April, 1960.
+(M.I.T. Hayden Library No. H-82). See especially sec. I-E.
+[53] R. M. Friedberg, "A learning machine, part I," IBM J. Res. &
+Dev., vol. 2, pp. 2-13; January, 1958.
+[54] R. M. Friedberg, B. Dunham, and J. H. North, "A learning ma-
+chine, part II," IBM J. Res. & Dev., vol. 3, pp. 282-287; July,
+1959.
+[55] R. J. Solomonoff, "An inductive inference machine," 1957 IRE
+NATIONAL CONVENTION RECORD, pt. 2, pp. 56-62.
+[56] C. D. Darlington, "The Evolution of Genetics," Basic Books,
+Inc., New York, N. Y.; 1958.
+[57] A. Newell and H. A. Simon, "The logic theory machine," [L].
+[58] A. Newell, J. C. Shaw, and H. A. Simon, "Empirical explora-
+tions of the logic theory machine," Proc. WJCC, pp. 218-230;
+1957.
+[59] H. Wang, "Toward mechanical mathematics," IBM J. Res. &
+Dev., vol. 4, pp. 2-22; January, 1960.
+[60] A. Newell, J. C. Shaw and, H. A. Simon, "Elements of a theory
+of human problem solving," Psych. Rev. vol. 65, p. 151; March,
+1958.
+[61] M. Davis and H. Putnam, "A computing procedure for quanti-
+fication theorv," J. ACM, vol. 7 pp. 201-215; July, 1960.
+[62] H. Gelernter and N.
+Rochester, "Intelligent behavior in prob
+lem-solving machines," IBM J. Res. & Dez., vol. 2,
+p. 336 ff.;
+October, 1958.
+[63] C. E. Shannon, "Game-playing machines," J. Franklin Inst.,
+vol. 206, pp. 447-453; December, 1955.
+[64] A. Newell and F. Tonge, "Introduction to IPL-V," Commun.
+A CM, vol. 3; April, 1960.
+[65] S. Golumb, "A mathematical theory of discrete classification,"
+[H].
+[66] J. Wozencraft and M. Horstein, "Coding for two-way channels,"
+[H].
+[67] J. Slagle, "A computer program for solving integration problems
+in 'Freshman Calculus'," thesis in preparation, M.I.T., Cam-
+bridge, Mass.
+[681 A. Newell, J. C. Shaw, and H. A. Simoin, "Report on a general
+problem-solving program," [E].
+1961
+29
+PROCEEDINGS OF THE IRE
+[691
+H. L. Gelernter, "Realizationi of a geometry-proving machinie,"
+[El.
+[701 J. McCarthy, "Programs with common sense, ' [C].
+[71] E. F. Moore, "On the shortest path through a
+mlaze," Proc.
+Internati. Symp. on the Theory of Switching, Harvard tUniv., Cam-
+bridge, Mass.; 1959.
+[72] A. M. TuLrinig, "Cani a machine think?," [K].
+[73] P.
+Roseuibloom,
+"Elements of Mathematical Logic," Dover
+Publications, New York, N. Y.; 1951.
+[74] H. Rogers, "Review of 'Godel's Proof' by Newmani anid Nagel,"
+Am. Math.
+Mfonthly, vol. 67, p. 98; January, 1960.
+[75]
+WV. S. McCulloch, "Through the den of the metaphysician,'
+Brit. J. Phil. Science, vol. 5, pp. 18-34; 1954.
+176] D. M. MacKay, "Operational aspects of intellect," [C].
+[77] K. J. XW. Craik, "The Nature of Explanation," Cambridge tU-lliV.
+Press, Cambridge, Eng.; 1952. Preface dated 1943.
+[78] F. A. Hayek, "The Sensorv Order," Routledge and Kegan PauLl,
+London, Eng.; 1952.
+[791 G. Pask, "Physical analogues to the growth of a concept,
+' [C3.
+[80] A. N. Chomisky, "Syntactic Structures," Mouton, The HaguLe;
+1957.
+[81] N. Chomsky and G. A. Miller, "Finite state languages," Inform.
+and Control, vol. 1, pp. 91-112; May, 1958.
+[82] N. Rochester, et al., "Tests on a cell assembly theory of the
+action of the brain, using a large digital computer," [L].
+[83] J. Y. Lettvin, H. Matuirania, W. S. McCulloch, and XV. Pitts,
+"What the frog's eye tells the frog's brain," PROC. IRE, vol. 47,
+pp. 1940-1951; November, 1959.
+[84] S. Gorn, "On the mechanical simulation of learning and habit-
+forming," Inform. and Control, vol. 2, pp. 226-259; September,
+1959.
+[85]
+M. Shubik,
+"Games, decisions and industrial organization,"
+M1anagement Science vol. 6, pp. 455-474; July, 1960.
+[86] J. S. Bruner, J. Goodnow, and G. Austin, "A Study of Thinking,"
+John WViley and Sons, Inc., New York, N. Y.; 1956.
+[871 G. Polya, "How to Solve It," Princeton Univ. Press, Princetonl,
+N. J.; 1945. Also, "Induction and Analogy in Mathematics,"
+and "Patterns of Plausible Inference," 2 vols., Priniceton Univ.
+Press, Princeton, N. J.; 1954. (Available in paperback.)
+[88] F. E. Hohn, S. Seshut, ancd
+D. D. Auifenikamp, "TIhe theory
+of
+nets," IRE TRANS. ON ELECTRONIC COMPUTERS, vol. EC-6, pp.
+154-161; September, 1957.
+[89] D. M. MacKay, "The epistemological problem for autotmata,"
+[B].
+[901
+1. J. Good, "Weight of evidence and false target probabilities,"
+[H].
+[91] A. Samuel, Letter to the Editor, Science, vol. 132, No. 3429;
+September 16, 1960. (Incorrectly labelled vol. 131 oni cover.)
+[92] B. G. Farley and WV. A. Clark, "Simiulation of self-organizinig
+systemiis by digital computer," IRE TRANS. ON INFORMATION
+rHEORY, vol. IT-4, pp. 76-84; September, 1954.
+[93] H. XVaug, "Proving theorems by patteru recognitioni,
+I," [G].
+[941 T. Kilburli, R. L. Grimsdale, and F. H. Sumllner, "Experimilenits
+inl mnachine thinking and learninlg, " [El.
+[95] N. Rashevskv, "Mathematical Biophysics," Dover Publicationis,
+Inc., New York, N. Y., vol. 2; 1960.
+Proceedinigs and collectionis containinlg more thani onie of the above
+references:
+[A] Proc. WJCC; March, 1955.
+[B] "AAutomlata Studies," C. E. Shannon and J. McCarthy. Eds.
+Princeton Univ. Press, Princeton, N. J.; 1956.
+[C] Proc. Symp. on Mechanization of Thought Processes, Her Maj-
+estv's Stationery Office, London, Eng.; 1959.
+[Dl "Self-Organizing Systems," M. T. Yovitts and S. Canmeroni, Eds.,
+Pergamoni Press, New York, N. Y.; 1960.
+[E] Proc.
+Internatl.
+Conf.
+on
+Information Processing, UNESCO
+House, Paris, France; 1959.
+[Fl Proc. EJCC; December, 1959.
+[G] Commun. A CI, vol.
+3; April,
+1960. (Preprinits of Conf. on
+Symbol Manipulation Programs.)
+[H] Fourth London Symp. on Information Theory, C. Cherry, Ed.,
+to be published.
+[J] Third London Symp. on Information Theory, C. Cherry, Ed.,
+Acadlemiiic Press, Inc., New York, N. Y.; 1956.
+[K] "The World
+of Mathematics,' 7Newnmani,
+Ed.,
+Similoii
+anid
+SchuLster, Ilnc., New York, N. Y., vol. 4; 1956.
+[L] IRE TRANS. ON INFORMATION THrvORYx
+Vol. IF-2; Septeml1ber
+1956.
+January
+30
