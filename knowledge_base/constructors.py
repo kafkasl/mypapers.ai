@@ -9,7 +9,7 @@ from langchain import PromptTemplate, OpenAI, LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tiktoken
 from tqdm.auto import tqdm
-
+from glob import glob
 from utils.logger import logger
 from typing import Union, Any, Optional
 
@@ -187,21 +187,24 @@ class Arxiv:
                      defaults to False
         :type save: bool, optional
         """
-        # check if pdf already exists
-        if os.path.exists(f'papers/{self.id}.json'):
-            logger.info(f'Loading papers/{self.id}.json from file')
-            with open(f'papers/{self.id}.json', 'r') as fp:
+        # Adjusted to pattern match title-id for filename
+        file_pattern = f'papers/*-{self.id}.json'
+        matching_files = glob(file_pattern)
+        if matching_files:
+            file_path = matching_files[0]
+            logger.info(f'Loading {file_path} from file')
+            with open(file_path, 'r') as fp:
                 attributes = json.loads(fp.read())
             for key, value in attributes.items():
                 setattr(self, key, value)
         else:
             res = self.session.get(self.url)
-            with open(f'papers/{self.id}.pdf', 'wb') as fp:
+            # get meta for PDF
+            self._download_meta()
+            with open(f'papers/{self.title}-{self.id}.pdf', 'wb') as fp:
                 fp.write(res.content)
             # extract text content
             self._convert_pdf_to_text()
-            # get meta for PDF
-            self._download_meta()
             if save:
                 self.save()
 
@@ -229,6 +232,7 @@ class Arxiv:
         attribute.
         """
         text = []
+        logger.info(f'Converting {self.id} to text')
         with open(f'papers/{self.id}.pdf', 'rb') as f:
             # create a PDF object
             pdf = PyPDF2.PdfReader(f)
@@ -271,7 +275,10 @@ class Arxiv:
     def save(self):
         """Save the paper to a local JSON file.
         """
-        with open(f'papers/{self.id}.json', 'w') as fp:
+        # Ensure title is filesystem-friendly
+        safe_title = re.sub(r'[\\/*?:"<>|]', "", self.title)[:50]  # Truncate and remove unsafe characters
+        filename = f'{safe_title}-{self.id}.json'
+        with open(f'papers/{filename}', 'w') as fp:
             json.dump(self.__dict__(), fp, indent=4)
 
     def save_chunks(
