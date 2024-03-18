@@ -5,9 +5,7 @@ import PyPDF2
 import json
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from langchain import PromptTemplate, OpenAI, LLMChain
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import tiktoken
+
 from tqdm.auto import tqdm
 from glob import glob
 from utils.logger import logger
@@ -70,58 +68,35 @@ def get_paper_id(query: str, handle_not_found: bool = True):
             raise Exception(f'No paper found for query: {query}')
     return paper_id
 
-def init_extractor(
-    template: str,
-    openai_api_key: Union[str, None] = None,
-    max_tokens: int = 1000,
-    chunk_size: int = 300,
-    chunk_overlap: int = 40
-):
-    if openai_api_key is None and 'OPENAI_API_KEY' not in os.environ:
-        raise Exception('No OpenAI API key provided')
-    openai_api_key = openai_api_key or os.environ['OPENAI_API_KEY']
-    # instantiate the OpenAI API wrapper
-    llm = OpenAI(
-        model_name='gpt-3.5-turbo-instruct',
-        openai_api_key=openai_api_key,
-        max_tokens=max_tokens,
-        temperature=0.0
-    )
-    # initialize prompt template
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=['refs']
-    )
-    # instantiate the LLMChain extractor model
-    extractor = LLMChain(
-        prompt=prompt,
-        llm=llm
-    )
-    text_splitter = tiktoken_splitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap
-    )
-    return extractor, text_splitter
+def find_by_id(paper_id: str, directory: str = 'papers') -> Optional[str]:
+    """
+    Find the filename without extension matching a given paper ID within a specified directory.
 
-def tiktoken_splitter(chunk_size=300, chunk_overlap=40):
-    tokenizer = tiktoken.get_encoding('p50k_base')
-    # create length function
-    def len_fn(text):
-        tokens = tokenizer.encode(
-            text, disallowed_special=()
-        )
-        return len(tokens)
-    # initialize the text splitter
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        length_function=len_fn,
-        separators=["\n\n", "\n", " ", ""]
-    )
-    return text_splitter
+    :param paper_id: The ID of the paper.
+    :param directory: The directory to search in, defaults to 'papers'.
+    :return: The matching filename without extension if found, None otherwise.
+    """
+    file_pattern = f'{directory}/*-{paper_id}.*'
+    matching_files = glob(file_pattern)
+    if matching_files:
+        # Assuming there's only one match per ID, and removing the extension and path
+        return os.path.splitext(matching_files[0])[0]
 
+def generate_path(title: str, paper_id: str, directory: str = 'papers') -> str:
+    """
+    Generate a "clean" filename given a paper title and ID.
 
-class Arxiv:
+    :param title: The title of the paper.
+    :param paper_id: The ID of the paper.
+    :param extension: The file extension, defaults to 'json'.
+    :return: A clean filename string.
+    """
+    # Remove unsafe characters and truncate to ensure the filename is valid
+    safe_title = re.sub(r'[\\/*?:"<>|]', "", title)[:150]  # Truncate and remove unsafe characters
+    filename = f'{directory}/{safe_title}-{paper_id}'
+    return filename
+
+class Arxiv(object):
     refs_re = re.compile(r'\n(References|REFERENCES)\n')
     references = []
     template = """You are a master PDF reader and when given a set of references you
@@ -187,13 +162,10 @@ class Arxiv:
                      defaults to False
         :type save: bool, optional
         """
-        # Adjusted to pattern match title-id for filename
-        file_pattern = f'papers/*-{self.id}.json'
-        matching_files = glob(file_pattern)
-        if matching_files:
-            file_path = matching_files[0]
+        file_path = find_by_id(self.id)
+        if file_path:
             logger.info(f'Loading {file_path} from file')
-            with open(file_path, 'r') as fp:
+            with open(f"{file_path}.json", 'r') as fp:
                 attributes = json.loads(fp.read())
             for key, value in attributes.items():
                 setattr(self, key, value)
@@ -201,7 +173,8 @@ class Arxiv:
             res = self.session.get(self.url)
             # get meta for PDF
             self._download_meta()
-            with open(f'papers/{self.title}-{self.id}.pdf', 'wb') as fp:
+            file_path = generate_path(self.title, self.id)
+            with open(f'{file_path}.pdf', 'wb') as fp:
                 fp.write(res.content)
             # extract text content
             self._convert_pdf_to_text()
@@ -210,11 +183,8 @@ class Arxiv:
 
     def get_refs(self):
         """Get the references for the paper.
+        Note: it only returns Arxiv references matched with the regex .get_id
 
-        :param extractor: The LLMChain extractor model
-        :type extractor: LLMChain
-        :param text_splitter: The text splitter to use
-        :type text_splitter: TokenTextSplitter
         :return: The references for the paper
         :rtype: list
         """
@@ -233,7 +203,8 @@ class Arxiv:
         """
         text = []
         logger.info(f'Converting {self.id} to text')
-        with open(f'papers/{self.id}.pdf', 'rb') as f:
+        file_path = find_by_id(self.id)
+        with open(f'{file_path}.pdf', 'rb') as f:
             # create a PDF object
             pdf = PyPDF2.PdfReader(f)
             # iterate over every page in the PDF
@@ -275,36 +246,9 @@ class Arxiv:
     def save(self):
         """Save the paper to a local JSON file.
         """
-        # Ensure title is filesystem-friendly
-        safe_title = re.sub(r'[\\/*?:"<>|]', "", self.title)[:50]  # Truncate and remove unsafe characters
-        filename = f'{safe_title}-{self.id}.json'
-        with open(f'papers/{filename}', 'w') as fp:
+        file_path = generate_path(self.title, self.id)
+        with open(f'{file_path}.json', 'w') as fp:
             json.dump(self.__dict__(), fp, indent=4)
-
-    def save_chunks(
-        self,
-        include_metadata: bool = True,
-        path: str = "chunks"
-        ):
-        """Save the paper's chunks to a local JSONL file.
-
-        :param include_metadata: Whether to include the paper's
-                                 metadata in the chunks, defaults
-                                 to True
-        :type include_metadata: bool, optional
-        :param path: The path to save the file to, defaults to "papers"
-        :type path: str, optional
-        """
-        if not os.path.exists(path):
-            os.makedirs(path)
-        with open(f'{path}/{self.id}-chunks.jsonl', 'w') as fp:
-            for chunk in self.dataset:
-                if include_metadata:
-                    chunk.update(self.get_meta())
-                fp.write(json.dumps(chunk) + '\n')
-            logger.info(f"Saved paper to '{path}/{self.id}.jsonl'")
-        with open(f"{path}/{self.id}.jsonl", "w") as fp:
-            fp.write(json.dumps(self.__dict__()))
 
     def get_meta(self):
         """Returns the meta information for the paper.
@@ -316,23 +260,6 @@ class Arxiv:
         # drop content field because it's big
         fields.pop('content')
         return fields
-
-    def chunker(self, chunk_size=300):
-        # clean and split into initial smaller chunks
-        clean_paper = self._clean_text(self.content)
-        splitter = tiktoken_splitter(chunk_size=chunk_size)
-
-        langchain_dataset = []
-
-        paper_chunks = splitter.split_text(clean_paper)
-        for i, chunk in enumerate(paper_chunks):
-            langchain_dataset.append({
-                'doi': self.id,
-                'chunk-id': str(i),
-                'chunk': chunk
-            })
-        logger.info(f"Split paper into {len(paper_chunks)} chunks")
-        self.dataset = langchain_dataset
 
     def _clean_text(self, text):
         text = re.sub(r'-\n', '', text)
@@ -403,8 +330,7 @@ class ArxivGraphScraper:
         # get references
         refs = paper.get_refs()
         logger.info(f"Found {len(refs)} references")
-        paper.chunker()
-        paper.save_chunks(include_metadata=True, path=self.save_location)
+
         return paper
 
     def _build_papers(self, paper_ids: list):
