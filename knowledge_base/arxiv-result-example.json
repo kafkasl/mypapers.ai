@@ -1,0 +1,103 @@
+{
+    "id": "http://arxiv.org/abs/1706.03762v7",
+    "guidislink": true,
+    "link": "http://arxiv.org/abs/1706.03762v7",
+    "updated": "2023-08-02T00:41:18Z",
+    "updated_parsed": [
+        2023,
+        8,
+        2,
+        0,
+        41,
+        18,
+        2,
+        214,
+        0
+    ],
+    "published": "2017-06-12T17:57:34Z",
+    "published_parsed": [
+        2017,
+        6,
+        12,
+        17,
+        57,
+        34,
+        0,
+        163,
+        0
+    ],
+    "title": "Attention Is All You Need",
+    "title_detail": {
+        "type": "text/plain",
+        "language": null,
+        "base": "",
+        "value": "Attention Is All You Need"
+    },
+    "summary": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks in an encoder-decoder configuration. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer, based\nsolely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to be\nsuperior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014\nEnglish-to-German translation task, improving over the existing best results,\nincluding ensembles by over 2 BLEU. On the WMT 2014 English-to-French\ntranslation task, our model establishes a new single-model state-of-the-art\nBLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction\nof the training costs of the best models from the literature. We show that the\nTransformer generalizes well to other tasks by applying it successfully to\nEnglish constituency parsing both with large and limited training data.",
+    "summary_detail": {
+        "type": "text/plain",
+        "language": null,
+        "base": "",
+        "value": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks in an encoder-decoder configuration. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer, based\nsolely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to be\nsuperior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014\nEnglish-to-German translation task, improving over the existing best results,\nincluding ensembles by over 2 BLEU. On the WMT 2014 English-to-French\ntranslation task, our model establishes a new single-model state-of-the-art\nBLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction\nof the training costs of the best models from the literature. We show that the\nTransformer generalizes well to other tasks by applying it successfully to\nEnglish constituency parsing both with large and limited training data."
+    },
+    "authors": [
+        {
+            "name": "Ashish Vaswani"
+        },
+        {
+            "name": "Noam Shazeer"
+        },
+        {
+            "name": "Niki Parmar"
+        },
+        {
+            "name": "Jakob Uszkoreit"
+        },
+        {
+            "name": "Llion Jones"
+        },
+        {
+            "name": "Aidan N. Gomez"
+        },
+        {
+            "name": "Lukasz Kaiser"
+        },
+        {
+            "name": "Illia Polosukhin"
+        }
+    ],
+    "author_detail": {
+        "name": "Illia Polosukhin"
+    },
+    "author": "Illia Polosukhin",
+    "arxiv_comment": "15 pages, 5 figures",
+    "links": [
+        {
+            "href": "http://arxiv.org/abs/1706.03762v7",
+            "rel": "alternate",
+            "type": "text/html"
+        },
+        {
+            "title": "pdf",
+            "href": "http://arxiv.org/pdf/1706.03762v7",
+            "rel": "related",
+            "type": "application/pdf"
+        }
+    ],
+    "arxiv_primary_category": {
+        "term": "cs.CL",
+        "scheme": "http://arxiv.org/schemas/atom"
+    },
+    "tags": [
+        {
+            "term": "cs.CL",
+            "scheme": "http://arxiv.org/schemas/atom",
+            "label": null
+        },
+        {
+            "term": "cs.LG",
+            "scheme": "http://arxiv.org/schemas/atom",
+            "label": null
+        }
+    ]
+}
