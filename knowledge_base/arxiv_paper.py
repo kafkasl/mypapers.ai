@@ -200,6 +200,7 @@ class Arxiv(object):
         self.summary = result.summary
         self.title = result.title
         self.updated = result.updated.strftime('%Y%m%d')
+        self.doi = result.doi
         logger.info(f"Downloaded metadata for paper '{self.id}'")
 
     def save(self):

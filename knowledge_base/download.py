@@ -1,6 +1,8 @@
 import os
-from knowledge_base.arxiv import Arxiv
-from find import find_paper_by_title
+import re
+
+from knowledge_base.arxiv_paper import Arxiv
+from find import find_paper_by_title, search_by_author
 from utils.logger import logger
 from collections import deque
 
@@ -25,7 +27,7 @@ def download_paper(paper_id: str, save_path: str = "./papers"):
     return paper
 
 
-def download_papers_by_id(paper_ids=("1712.01815"), download_references=True, max_papers=100)
+def download_papers_by_id(paper_ids, download_references=True, max_papers=100):
     paper_queue = deque(paper_ids)  # Initialize the queue with the initial paper IDs
     seen = set()  # Use a set for faster lookup
     downloaded_papers = 0
@@ -43,6 +45,9 @@ def download_papers_by_id(paper_ids=("1712.01815"), download_references=True, ma
         if download_references and downloaded_papers < max_papers:
             paper_queue.extend(map(lambda ref: ref['id'], paper.references))
 
+def get_arxiv_id(string):
+    res = string.split('/')[-1]
+    return re.sub(r'v\d+$', '', res)
 
 if __name__ == "__main__":
     # title = "AlphaStar Unplugged: Large-Scale Offline Reinforcement Learning"
@@ -57,5 +62,12 @@ if __name__ == "__main__":
         # "2307.09288", # Llama 2: Open Foundation and Fine-Tuned Chat Models
     ]
 
-    download_papers_by_id(paper_ids=paper_ids, download_references=True, max_papers=100)
+    results = search_by_author("Oriol Vinyals")
+    paper_ids = [get_arxiv_id(r.entry_id) for r in results]
+    # for r in results:
+    #     print(f"[{r.entry_id.split('/')[-1]}] {r.title}")
+    #     arxiv_id = get_arxiv_id(r.entry_id)
+    #     print(arxiv_id)
+
+    download_papers_by_id(paper_ids=paper_ids, download_references=False, max_papers=100)
 

@@ -5,6 +5,8 @@ from langchain.prompts.prompt import PromptTemplate
 from langchain.chains import GraphCypherQAChain
 from langchain_openai import ChatOpenAI
 from knowledge_graph.neo4j_config import init_kg
+import warnings
+warnings.filterwarnings('ignore')
 
 
 kg = init_kg()
@@ -43,7 +45,9 @@ CALL db.index.fulltext.queryNodes(
 WITH node as author
 MATCH (author:Author)-[:AUTHOR_OF]->(p:Paper)<-[:SUMMARY_OF]-(s:Chunk)
 RETURN s.text
-"""
+
+The question is:
+{question}"""
 
 CYPHER_GENERATION_PROMPT = PromptTemplate(
     input_variables=["schema", "question"],
@@ -53,17 +57,18 @@ CYPHER_GENERATION_PROMPT = PromptTemplate(
 cypherChain = GraphCypherQAChain.from_llm(
     ChatOpenAI(temperature=0),
     graph=kg,
-    verbose=True,
+    verbose=True ,
     cypher_prompt=CYPHER_GENERATION_PROMPT,
 )
 
 def question_with_graph_cypher(question: str) -> str:
     response = cypherChain.run(question)
-    print(textwrap.fill(response, 60))
-
+    print(response)
 
 
 if __name__ == "__main__":
-
-    question = 'Which topics has Oriol Vinals written about?'
-    question_with_graph_cypher(question)
+    questions = ["Which topics has Oriol Vinals written about?",
+                 "Summarize Oriol Vinyals research."]
+    for question in questions:
+        print(f"\n> {question}")
+        question_with_graph_cypher(question)

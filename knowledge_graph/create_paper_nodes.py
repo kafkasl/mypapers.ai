@@ -101,10 +101,10 @@ def create_paper_node(paper_info):
 
 
 def get_number_of_papers():
-       # check how many paper nodes have been added
+    # check how many paper nodes have been added
     kg.query("MATCH (p:Paper) RETURN count(p) as paperCount")
 
-    # just checking the conents before doing stuff
+    # just checking the contents before doing stuff
     cypher = """
     MATCH (from_content:Chunk)
     WHERE from_content.arxiv_id = $arxiv_id_param
@@ -132,7 +132,7 @@ def get_number_of_papers():
 # Connect **authors** chunks to the paper with a AUTHORS_OF relationship (DEPRECATED)
 # Create a CONTENT relationship on first chunk of each paper
 # ===============================================
-def connect_chunks():
+def create_paper_structure_edges():
     cypher = """
     MATCH (c:Chunk), (p:Paper)
     WHERE c.arxiv_id = p.arxiv_id
@@ -197,10 +197,10 @@ def create_paper_nodes():
     print(kg.schema)
 
     # check how many paper nodes have been added
-    r = get_number_of_papers()
-    print(r)
+    # r = get_number_of_papers()
+    # print(r)
 
-    connect_chunks()
+    create_paper_structure_edges()
 
 if __name__ == "__main__":
     create_paper_nodes()
