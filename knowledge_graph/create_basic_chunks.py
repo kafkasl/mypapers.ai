@@ -40,7 +40,7 @@ def split_data_from_file(file):
     chunks_with_metadata = []
     file_as_object = json.load(open(file))
     arxiv_id = file_as_object['id']
-    for content_type in ['summary','authors','content']:
+    for content_type in ['summary', 'content']:
         item_text = file_as_object[content_type]
         if type(item_text) == list: item_text = ' '.join(item_text)
         item_text_chunks = text_splitter.split_text(item_text)

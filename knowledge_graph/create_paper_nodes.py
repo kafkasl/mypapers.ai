@@ -129,7 +129,6 @@ def get_number_of_papers():
 # ===============================================
 # Connect **content** chunks to the paper with a PART_OF relationship
 # Connect **summary** chunks to the paper with a SUMMARY_OF relationship
-# Connect **authors** chunks to the paper with a AUTHORS_OF relationship (DEPRECATED)
 # Create a CONTENT relationship on first chunk of each paper
 # ===============================================
 def create_paper_structure_edges():
@@ -152,17 +151,6 @@ def create_paper_structure_edges():
     RETURN count(newRelationship)
     """
     kg.query(cypher)
-
-    # No longer needed because we'll create individual author nodes
-    #   cypher = """
-    #   MATCH (c:Chunk), (p:Paper)
-    #     WHERE c.arxiv_id = p.arxiv_id
-    #     AND c.content_type = 'authors'
-
-    #   MERGE (c)-[newRelationship:AUTHORS_OF]->(p)
-    #   RETURN count(newRelationship)
-    #   """
-    #   kg.query(cypher)
 
     # Create a CONTENT relationship on first chunk of each paper
     cypher = """

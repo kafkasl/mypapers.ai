@@ -8,20 +8,20 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain_openai import ChatOpenAI
+from knowledge_graph.neo4j_config import init_kg
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
 load_dotenv('.env', override=True)
+
+
+kg = init_kg()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 VECTOR_INDEX_NAME = 'paper_chunks'
 VECTOR_NODE_LABEL = 'Chunk'
 VECTOR_SOURCE_PROPERTY = 'text'
 VECTOR_EMBEDDING_PROPERTY = 'textEmbedding'
-
-kg = Neo4jGraph(
-    url=os.getenv("NEO4J_URI"), username=os.getenv("NEO4J_USERNAME"), password=os.getenv("NEO4J_PASSWORD"), database=os.getenv("NEO4J_DATABASE")
-)
 
 
 # retrieves source for a given question using embeddings & cosine similarity
@@ -170,4 +170,3 @@ query += "If you are unsure about the answer, say you don't know."
 # search_results = neo4j_vector_search(query)
 # print(search_results)
 
-prettychain(query)
