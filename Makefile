@@ -7,5 +7,11 @@ freeze:
 install:
 	python -m venv venv
 	pip install -r requirements.txt
+deploy-site:
+	rsync -avz --progress templates mypapers-ai:/home/user/
+deploy:
+	rsync -avz --progress --exclude='papers' --exclude='*.pyc' --exclude='__pycache__/' --exclude='venv/' --exclude='*.env' . mypapers-ai:/home/user/app
+restart:
+	sudo docker compose down && sudo docker compose up --build
 clean:
 	rm -rf venv
