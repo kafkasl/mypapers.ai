@@ -1,7 +1,7 @@
 *.pyc
 *__pycache__*
 .venv
-.env
+*.env
 .vscode
 talk2apis
 .DS_Store
@@ -9,4 +9,7 @@ talk2apis
 venv
 papers
 
-
+examples
+canopy
+neo4j_dl_course
+summarizers

@@ -9,7 +9,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain_openai import ChatOpenAI
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
+
+from knowledge_graph.db import init_kg
+
+
+kg = init_kg()
 
 load_dotenv('.env', override=True)
 
@@ -20,12 +25,6 @@ VECTOR_SOURCE_PROPERTY = 'text'
 VECTOR_EMBEDDING_PROPERTY = 'textEmbedding'
 
 
-kg = Neo4jGraph(
-    url=os.getenv("NEO4J_URI"),
-    username=os.getenv("NEO4J_USERNAME"),
-    password=os.getenv("NEO4J_PASSWORD"),
-    database=os.getenv("NEO4J_DATABASE")
-)
 
 
 text_splitter = RecursiveCharacterTextSplitter(
@@ -181,12 +180,12 @@ if __name__ == "__main__":
             "./papers/Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm-1712.01815.json"]
 
     # papers by Oriol Vinyals
-    files = ["./papers/Classification Accuracy Score for Conditional Generative Models-1905.10887.json",
-             "./papers/Connecting Generative Adversarial Networks and Actor-Critic Methods-1610.01945.json",
-             "./papers/A Neural Conversational Model-1506.05869.json",
-             "./papers/Krylov Subspace Descent for Deep Learning-1111.4259.json",
-             "./papers/Adversarial Evaluation of Dialogue Models-1701.08198.json",
-            ]
+    # files = ["./papers/Classification Accuracy Score for Conditional Generative Models-1905.10887.json",
+    #          "./papers/Connecting Generative Adversarial Networks and Actor-Critic Methods-1610.01945.json",
+    #          "./papers/A Neural Conversational Model-1506.05869.json",
+    #          "./papers/Krylov Subspace Descent for Deep Learning-1111.4259.json",
+    #          "./papers/Adversarial Evaluation of Dialogue Models-1701.08198.json",
+            # ]
     create_basic_chunks(files)
 
     question = 'In a single sentence, tell me about AlphaStar.'

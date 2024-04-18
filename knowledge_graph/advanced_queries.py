@@ -4,7 +4,7 @@ import textwrap
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains import GraphCypherQAChain
 from langchain_openai import ChatOpenAI
-from knowledge_graph.neo4j_config import init_kg
+from knowledge_graph.db import init_kg
 import warnings
 warnings.filterwarnings('ignore')
 

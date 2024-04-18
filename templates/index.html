@@ -14,6 +14,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mypapers.ai</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
 <body class="bg-gray-900 text-white flex items-center justify-center h-screen">
@@ -21,13 +23,26 @@
         <h1 class="text-4xl font-bold mb-5">mypapers.ai: Coming Soon</h1>
         <ul>
 
-            <li class="mb-4">Follow the journey on <a href="https://x.com/pol_avec" class="text-blue-400">Twitter</a>
+            <li class="mb-4">Follow the journey on <a href="https://x.com/pol_avec" class="text-blue-400">X</a>
             </li>
             <li>
                 Check out the code on <a href="https://github.com/kafkasl/mypapers.ai" class="text-blue-400">GitHub</a>.
             </li>
         </ul>
     </div>
+    <!-- begin olark code -->
+    <script type="text/javascript" async>
+        ; (function (o, l, a, r, k, y) {
+            if (o.olark) return;
+            r = "script"; y = l.createElement(r); r = l.getElementsByTagName(r)[0];
+            y.async = 1; y.src = "//" + a; r.parentNode.insertBefore(y, r);
+            y = o.olark = function () { k.s.push(arguments); k.t.push(+new Date) };
+            y.extend = function (i, j) { y("extend", i, j) };
+            y.identify = function (i) { y("identify", k.i = i) };
+            y.configure = function (i, j) { y("configure", i, j); k.c[i] = j };
+            k = y._ = { s: [], t: [+new Date], c: {}, l: a };
+        })(window, document, "static.olark.com/jsclient/loader.js");/* custom configuration goes here (www.olark.com/documentation) */olark.identify('6674-726-10-8637');</script>
+    <!-- end olark code -->
 </body>
 
 </html>

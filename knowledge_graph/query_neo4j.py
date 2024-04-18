@@ -8,7 +8,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain_openai import ChatOpenAI
-from knowledge_graph.neo4j_config import init_kg
+from knowledge_graph.db import init_kg
 import warnings
 warnings.filterwarnings('ignore')
 

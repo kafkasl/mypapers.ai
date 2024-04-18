@@ -1,19 +1,7 @@
-
-from dotenv import load_dotenv
-import os
-
-from knowledge_graph.neo4j_config import init_kg
-
-load_dotenv('.env', override=True)
+from knowledge_graph.db import init_kg
 
 kg = init_kg()
 
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-VECTOR_INDEX_NAME = 'paper_chunks'
-VECTOR_NODE_LABEL = 'Chunk'
-VECTOR_SOURCE_PROPERTY = 'text'
-VECTOR_EMBEDDING_PROPERTY = 'textEmbedding'
 
 def create_author_nodes():
     # Execute the query to get authors along with a unique identifier for the paper (e.g., arxiv_id)

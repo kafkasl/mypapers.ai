@@ -1,0 +1,30 @@
+type Query {
+  getAllData: GraphData
+}
+
+type GraphData {
+  papers: [Paper]
+  authors: [Author]
+  links: [Link]
+}
+
+type Paper {
+  id: String
+  title: String
+  published: String
+  authors: [Author]
+  type: String
+}
+
+type Author {
+  id: String
+  name: String
+  papers: [Paper]
+  type: String
+}
+
+type Link {
+  source: String
+  target: String
+  type: String
+}
