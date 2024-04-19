@@ -10,6 +10,7 @@
         gtag('js', new Date());
         gtag('config', 'G-3MVESGM9D3');
     </script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mypapers.ai</title>
@@ -18,18 +19,162 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
-<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
-    <div class="text-center">
-        <h1 class="text-4xl font-bold mb-5">mypapers.ai: Coming Soon</h1>
-        <ul>
-
-            <li class="mb-4">Follow the journey on <a href="https://x.com/pol_avec" class="text-blue-400">X</a>
-            </li>
-            <li>
-                Check out the code on <a href="https://github.com/kafkasl/mypapers.ai" class="text-blue-400">GitHub</a>.
-            </li>
-        </ul>
+<body class="bg-white text-gray-900 flex h-screen">
+    <div id="cy" class="w-3/4 h-full"></div>
+    <div class="absolute top-0 left-0 p-4">
+        <h1 class="text-4xl font-bold mb-1 text-gray-900">mypapers.ai</h1>
+        <h3 class="text-xl text-blue-500">alpha version</h3>
     </div>
+    <div class="w-1/4 h-full bg-gray-900 overflow-y-auto p-4 flex flex-col">
+
+        <div id="info" class="p-4 bg-white shadow-lg rounded-lg mb-auto">
+            Click on a node to see more information here.
+        </div>
+        <div class="mt-auto">
+            <div class="text-left text-white mb-4">
+                <ul>
+                    <li class="mb-4">Follow the journey on <a href="https://x.com/pol_avec" class="text-blue-400">X</a>
+                    </li>
+                    <li>Check out the code on <a href="https://github.com/kafkasl/mypapers.ai"
+                            class="text-blue-400">GitHub</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+
+        const API_URL = "{{ api_url }}";
+        console.log(API_URL);
+        async function fetchData() {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: `{
+                        getAllData {
+                            papers { id title }
+                            authors { id name }
+                            links { source target }
+                        }
+                    }`
+                })
+            });
+            const data = await response.json();
+            return data.data.getAllData;
+        }
+
+        function processGraphData(data) {
+            const elements = [];
+            data.papers.forEach(paper => {
+                elements.push({ data: { id: paper.id, label: paper.title, type: 'paper' } });
+            });
+
+            data.authors.forEach(author => {
+                elements.push({ data: { id: author.id, label: author.name, type: 'author' } });
+            });
+
+            data.links.forEach(link => {
+                elements.push({ data: { source: link.source, target: link.target, label: 'authored by' } });
+            });
+
+            return elements;
+        }
+
+        async function initializeGraph() {
+            const data = await fetchData();
+            const elements = processGraphData(data);
+
+            var cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: [
+                    {
+                        selector: 'node[type="paper"]',
+                        style: {
+                            'background-color': '#003366',
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            // 'color': '#1f2937', // Dark Blue Gray for text
+                            'text-outline-width': 2,
+                            'text-outline-color': 'white',
+                            'font-size': '12px',
+                            'text-wrap': 'ellipsis',
+                            'text-max-width': '140px'
+                        }
+                    },
+                    {
+                        selector: 'node[type="author"]',
+                        style: {
+                            'background-color': '#89CFF0',
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            // 'color': '#1f2937',
+                            'text-outline-width': 2,
+                            'text-outline-color': 'white',
+                            'font-size': '12px',
+                            // 'text-wrap': 'ellipsis',
+                            'text-max-width': '80px'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'curve-style': 'bezier',
+                            'width': 1,
+                            'line-color': '#D3D3D3', // Cool Gray for edges
+                            'target-arrow-color': '#D3D3D3',
+                            // 'target-arrow-shape': 'triangle',
+                            'arrow-scale': 0.5
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'cose',
+                    idealEdgeLength: 100,
+                    nodeOverlap: 20,
+                    refresh: 20,
+                    fit: true,
+                    padding: 30,
+                    randomize: false,
+                    componentSpacing: 100,
+                    nodeRepulsion: 400000,
+                    edgeElasticity: 100,
+                    nestingFactor: 5,
+                }
+            });
+
+            cy.on('tap', 'node', function (evt) {
+                var node = evt.target;
+                var nodeType = node.data('type');
+                var infoContent = '';
+
+                if (nodeType === 'paper') {
+                    infoContent = `
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Paper</h2>
+                        <p class="text-gray-700"><strong>Title:</strong> ${node.data('label')}</p>
+                        <p class="text-gray-700"><strong>Publication Date:</strong> ${node.data('publicationDate')}</p>
+                        <p class="text-gray-700"><strong>Summary:</strong> ${node.data('summary')}</p>
+                        <p class="text-gray-700"><strong>Link:</strong> <a href="${node.data('link')}" class="text-blue-500 hover:text-blue-700">Read more</a></p>
+                    `;
+                } else if (nodeType === 'author') {
+                    infoContent = `
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Author</h2>
+                        <p class="text-gray-700"><strong>Name:</strong> ${node.data('label')}</p>
+                    `;
+                }
+
+                document.getElementById('info').innerHTML = infoContent;
+            });
+        }
+
+        initializeGraph();
+    </script>
+
+
+
     <!-- begin olark code -->
     <script type="text/javascript" async>
         ; (function (o, l, a, r, k, y) {
