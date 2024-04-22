@@ -1,4 +1,4 @@
-from ariadne import QueryType, make_executable_schema, graphql_sync, UnionType, load_schema_from_path
+from ariadne import QueryType, make_executable_schema, graphql_sync, load_schema_from_path
 from flask import jsonify, request
 from knowledge_graph.db import init_kg
 
@@ -28,7 +28,10 @@ def resolve_get_all_data(*_):
             paper_node = {
                 "id": paper['arxiv_id'],
                 "title": paper['title'],
-                "type": "paper"
+                "type": "paper",
+                "publicationDate": paper['published'],
+                "summary": paper['summary'] if 'summary' in paper else "",
+                "link": paper['source']
             }
             papers.append(paper_node)
             seen_papers.add(paper['arxiv_id'])

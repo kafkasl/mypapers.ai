@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify
 import os
 from graphql_api import handle_graphql_request
 from flask_cors import CORS

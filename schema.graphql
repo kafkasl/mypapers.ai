@@ -11,7 +11,9 @@ type GraphData {
 type Paper {
   id: String
   title: String
-  published: String
+  publicationDate: String
+  summary: String
+  link: String
   authors: [Author]
   type: String
 }
