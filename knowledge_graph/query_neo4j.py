@@ -1,11 +1,7 @@
 from dotenv import load_dotenv
 import os
-import json
-import textwrap
-from langchain_community.graphs import Neo4jGraph
 from langchain_community.vectorstores import Neo4jVector
 from langchain_openai import OpenAIEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain_openai import ChatOpenAI
 from knowledge_graph.db import init_kg

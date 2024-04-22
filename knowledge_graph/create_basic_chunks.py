@@ -26,7 +26,6 @@ VECTOR_EMBEDDING_PROPERTY = 'textEmbedding'
 
 
 
-
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size = 4000,
     chunk_overlap  = 1000,

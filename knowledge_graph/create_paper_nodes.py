@@ -20,7 +20,7 @@ VECTOR_EMBEDDING_PROPERTY = 'textEmbedding'
 #===============================================
 def get_list_of_papers():
     cypher = """
-    MATCH (anyChunk:Chunk)
+    MATCH (anyChunk:Chunk {content_type: "summary"})
     WITH anyChunk
     RETURN DISTINCT anyChunk {
         .arxiv_id,
@@ -28,6 +28,7 @@ def get_list_of_papers():
         .source,
         .authors,
         .categories,
+        .text,
         .published,
         .updated
         } as paperInfo
@@ -71,6 +72,7 @@ def create_paper_node(paper_info):
         ON CREATE
             SET p.title = $paperInfoParam.title
             SET p.source = $paperInfoParam.source
+            SET p.summary = $paperInfoParam.text
             SET p.authors = $paperInfoParam.authors
             SET p.categories = $paperInfoParam.categories
             SET p.published = $paperInfoParam.published
