@@ -9,3 +9,17 @@ services:
       - VALIDATE_USER_PROMPT=true
     volumes:
       - .:/app
+  neo4j:
+    image: neo4j:5.19.0-enterprise
+    network_mode: "bridge"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*,genai.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,algo.*,genai.*
+      - NEO4J_PLUGINS=["apoc", "genai"]
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - ./volume/plugins:/plugins
+      - ./volume/data:/data
