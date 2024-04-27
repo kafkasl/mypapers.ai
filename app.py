@@ -3,6 +3,9 @@ import os
 from graphql_api import handle_graphql_request
 from flask_cors import CORS
 from dotenv import load_dotenv
+from add_papers import add_papers
+
+
 load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -22,7 +25,11 @@ def home():
 def graphql():
     return handle_graphql_request()
 
+
 if __name__ == "__main__":
     debug = os.getenv("DEBUG")
     port = os.getenv("HTTP_PORT")
+
+    # add_papers()
+
     app.run(debug=debug, port=port, use_reloader=False)
