@@ -164,11 +164,9 @@ def create_paper_nodes():
         create_paper_node(paper_info)
 
     kg.refresh_schema()
-    print(kg.schema)
 
     # check how many paper nodes have been added
-    # r = get_number_of_papers()
-    # print(r)
+    # print(get_number_of_papers())
 
     create_paper_structure_edges()
 

@@ -111,6 +111,7 @@ class Arxiv(object):
         self.url = f"https://export.arxiv.org/pdf/{paper_id}.pdf"
         # initialize the requests session
         self.session = requests.Session()
+        self.file_path = ''
 
     def load(self, save: bool = False):
         """Load the paper from the ArXiv API or from a local file
@@ -121,10 +122,12 @@ class Arxiv(object):
                      defaults to False
         :type save: bool, optional
         """
-        file_path = find_by_id(self.id)
-        if file_path:
-            logger.info(f'Loading {file_path} from file')
-            with open(f"{file_path}.json", 'r') as fp:
+        self.file_path = find_by_id(self.id)
+        json_exists = os.path.exists(f"{self.file_path}.json")
+        pdf_exists = os.path.exists(f"{self.file_path}.pdf")
+        if json_exists and pdf_exists:      
+            logger.debug(f'Loading {self.file_path} from file')
+            with open(f"{self.file_path}.json", 'r') as fp:
                 attributes = json.loads(fp.read())
             for key, value in attributes.items():
                 setattr(self, key, value)
@@ -132,8 +135,8 @@ class Arxiv(object):
             res = self.session.get(self.url)
             # get meta for PDF
             self._download_meta()
-            file_path = generate_path(self.title, self.id)
-            with open(f'{file_path}.pdf', 'wb') as fp:
+            self.file_path = generate_path(self.title, self.id)
+            with open(f'{self.file_path}.pdf', 'wb') as fp:
                 fp.write(res.content)
             # extract text content
             self._convert_pdf_to_text()
@@ -147,7 +150,7 @@ class Arxiv(object):
         :return: The references for the paper
         :rtype: list
         """
-        logger.info(f'Extracting references for {self.id}')
+        logger.debug(f'Extracting references for {self.id}')
         if len(self.references) == 0:
             content = self.content.lower()
             matches = self.get_id.findall(content)
@@ -161,7 +164,7 @@ class Arxiv(object):
         attribute.
         """
         text = []
-        logger.info(f'Converting {self.id} to text')
+        logger.debug(f'Converting {self.id} to text')
         file_path = find_by_id(self.id)
         with open(f'{file_path}.pdf', 'rb') as f:
             # create a PDF object
@@ -201,14 +204,17 @@ class Arxiv(object):
         self.title = result.title
         self.updated = result.updated.strftime('%Y%m%d')
         self.doi = result.doi
-        logger.info(f"Downloaded metadata for paper '{self.id}'")
+        logger.debug(f"Downloaded metadata for paper '{self.id}'")
 
-    def save(self):
+    def save(self, clean_pdf: bool = True):
         """Save the paper to a local JSON file.
         """
-        file_path = generate_path(self.title, self.id)
-        with open(f'{file_path}.json', 'w') as fp:
+        self.file_path = generate_path(self.title, self.id)
+        with open(f'{self.file_path}.json', 'w') as fp:
             json.dump(self.__dict__(), fp, indent=4)
+        if clean_pdf:
+            # remove the pdf file
+            os.remove(f'{self.file_path}.pdf')
 
     def get_meta(self):
         """Returns the meta information for the paper.

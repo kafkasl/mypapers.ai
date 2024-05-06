@@ -11,6 +11,12 @@
         gtag('config', 'G-3MVESGM9D3');
     </script>
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+    <!--     <script src="https://unpkg.com/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>-->
+    <script src="https://unpkg.com/layout-base/layout-base.js"></script>
+    <script src="https://unpkg.com/cose-base/cose-base.js"></script>
+    <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script> 
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mypapers.ai</title>
@@ -39,6 +45,10 @@
         <div id="info" class="p-4 bg-white shadow-lg rounded-lg mb-4">
             Click on a node to see more information here.
         </div>
+        <div class="toggle-buttons">
+            <button id="togglePapers" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Toggle Papers</button>
+            <button id="toggleAuthors" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Toggle Authors</button>
+        </div>
         <div class="mt-auto">
             <div class="text-left text-white mb-4">
                 <ul>
@@ -56,6 +66,7 @@
 
         const API_URL = "{{ api_url }}";
         console.log(API_URL);
+        
         async function fetchData() {
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -113,28 +124,28 @@
                 elements: elements,
                 style: [
                     {
-                        selector: 'node[type="paper"]',
+                        selector: 'node',
                         style: {
-                            'background-color': '#003366',
                             'label': 'data(label)',
                             'text-valign': 'center',
                             'text-outline-width': 2,
                             'text-outline-color': 'white',
                             'font-size': '12px',
                             'text-wrap': 'ellipsis',
-                            'text-max-width': '140px'
+                            'text-max-width': '80px'
+                        }
+                    },
+                    {
+                        selector: 'node[type="paper"]',
+                        style: {
+                            'background-color': '#003366',
+
                         }
                     },
                     {
                         selector: 'node[type="author"]',
                         style: {
                             'background-color': '#89CFF0',
-                            'label': 'data(label)',
-                            'text-valign': 'center',
-                            'text-outline-width': 2,
-                            'text-outline-color': 'white',
-                            'font-size': '12px',
-                            'text-max-width': '80px'
                         }
                     },
                     {
@@ -142,26 +153,37 @@
                         style: {
                             'curve-style': 'bezier',
                             'width': 1,
-                            'line-color': '#D3D3D3', // Cool Gray for edges
+                            'line-color': '#D3D3D3',
                             'target-arrow-color': '#D3D3D3',
                             'arrow-scale': 0.5
                         }
                     }
                 ],
                 layout: {
-                    name: 'cose',
-                    idealEdgeLength: 100,
-                    nodeOverlap: 20,
-                    refresh: 20,
-                    fit: true,
-                    padding: 30,
-                    randomize: false,
-                    componentSpacing: 100,
-                    nodeRepulsion: 400000,
-                    edgeElasticity: 100,
-                    nestingFactor: 5,
+                    // name: 'cose',
+                    // nodeDimensionsIncludeLabels: true, // Whether to include labels in node dimensions. Useful for avoiding label overlap
+                    name: 'fcose',
+                    // // Some of the options for cose-bilkent layout
+                    nodeDimensionsIncludeLabels: true, // Whether to include labels in node dimensions. Useful for avoiding label overlap
+                    // refresh: 20, // Number of iterations between consecutive screen positions update (higher -> less updates, less jerky)
+                    // fit: true, // Whether to fit the network view after when done
+                    // padding: 30, // Padding on fit
+                    // randomize: true, // Randomize the initial positions of the nodes (true for distinct results)
+                    // nodeRepulsion: 4500, // Node repulsion (non overlapping) multiplier
+                    // idealEdgeLength: 50, // Ideal edge (non nested) length
+                    // edgeElasticity: 0.45, // Divisor to compute edge forces
+                    // nestingFactor: 0.1, // Nesting factor (multiplier) to compute ideal edge length for nested edges
+                    // gravity: 0.25, // Gravity force (constant)
+                    // numIter: 2500, // Maximum number of iterations to perform
+                    // tile: true, // Whether to tile disconnected nodes
+                    // animate: 'end', // Type of layout animation. The option set is {'during', 'end', false}
+            
+                    // name: 'cola',
+                    // infinte: true
                 }
             });
+
+            cy.fit();
 
             cy.on('render', () => {
                 document.getElementById('loading').style.display = 'none';
@@ -193,7 +215,24 @@
 
                 document.getElementById('info').innerHTML = infoContent;
             });
+            
+            function toggleVisibility(nodeType) {
+                var nodes = cy.nodes(`[type="${nodeType}"]`);
+                nodes.forEach(node => {
+                    node.style('display', node.style('display') === 'none' ? 'element' : 'none');
+                });
+                cy.fit();
+
+            }
+            document.getElementById('togglePapers').addEventListener('click', function() {
+                toggleVisibility('paper');
+            });
+    
+            document.getElementById('toggleAuthors').addEventListener('click', function() {
+                toggleVisibility('author');
+            });
         }
+
 
         initializeGraph();
     </script>

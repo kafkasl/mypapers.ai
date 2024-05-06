@@ -13,7 +13,6 @@ type Paper {
   title: String
   publicationDate: String
   summary: String
-  link: String
   authors: [Author]
   type: String
 }

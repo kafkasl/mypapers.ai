@@ -60,8 +60,14 @@ def split_data_from_file(file):
             chunk_seq_id += 1
     return chunks_with_metadata
 
+def clean_text(chunk):
+    # Replace any problematic characters with the Unicode Replacement Character
+    chunk['text'] = chunk['text'].encode('utf-8', 'replace').decode('utf-8')
+    return chunk
 
-def create_chunks(files):    # Create constraint ensure there are no duplicate chunks
+
+def create_chunks(files):   
+    # Create constraint ensure there are no duplicate chunks
     kg.query("""
     CREATE CONSTRAINT unique_chunk IF NOT EXISTS
         FOR (c:Chunk) REQUIRE c.chunkId IS UNIQUE
@@ -90,7 +96,7 @@ def create_chunks(files):    # Create constraint ensure there are no duplicate c
         for chunk in file_chunks:
             kg.query(merge_chunk_node_query,
                     params={
-                        'chunkParam': chunk
+                        'chunkParam': clean_text(chunk)
                     })
             node_count += 1
 
@@ -118,8 +124,6 @@ def create_embeddings():
         params={"openAiApiKey":OPENAI_API_KEY} )
 
     kg.refresh_schema()
-    print(kg.schema)
-
 
 def neo4j_vector_search(question: str) -> list:
   vector_search_query = """
@@ -142,25 +146,25 @@ def neo4j_vector_search(question: str) -> list:
 
 
 
-neo4j_vector_store = Neo4jVector.from_existing_graph(
-    embedding=OpenAIEmbeddings(),
-    url=os.getenv("NEO4J_URI"),
-    username=os.getenv("NEO4J_USERNAME"),
-    password=os.getenv("NEO4J_PASSWORD"),
-    index_name=VECTOR_INDEX_NAME,
-    node_label=VECTOR_NODE_LABEL,
-    text_node_properties=[VECTOR_SOURCE_PROPERTY],
-    embedding_node_property=VECTOR_EMBEDDING_PROPERTY,
-)
+# neo4j_vector_store = Neo4jVector.from_existing_graph(
+#     embedding=OpenAIEmbeddings(),
+#     url=os.getenv("NEO4J_URI"),
+#     username=os.getenv("NEO4J_USERNAME"),
+#     password=os.getenv("NEO4J_PASSWORD"),
+#     index_name=VECTOR_INDEX_NAME,
+#     node_label=VECTOR_NODE_LABEL,
+#     text_node_properties=[VECTOR_SOURCE_PROPERTY],
+#     embedding_node_property=VECTOR_EMBEDDING_PROPERTY,
+# )
 
 
-retriever = neo4j_vector_store.as_retriever()
+# retriever = neo4j_vector_store.as_retriever()
 
-chain = RetrievalQAWithSourcesChain.from_chain_type(
-    ChatOpenAI(temperature=0),
-    chain_type="stuff",
-    retriever=retriever
-)
+# chain = RetrievalQAWithSourcesChain.from_chain_type(
+#     ChatOpenAI(temperature=0),
+#     chain_type="stuff",
+#     retriever=retriever
+# )
 
 def prettychain(question: str) -> str:
     """Pretty print the chain's response to a question"""
@@ -173,30 +177,24 @@ def create_basic_chunks(files):
     create_chunks(files)
     create_embeddings()
 
+
 if __name__ == "__main__":
 
     files = ["./papers/AlphaStar Unplugged Large-Scale Offline Reinforcement Learning-2308.03526.json",
             "./papers/Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm-1712.01815.json"]
-
-    # papers by Oriol Vinyals
-    # files = ["./papers/Classification Accuracy Score for Conditional Generative Models-1905.10887.json",
-    #          "./papers/Connecting Generative Adversarial Networks and Actor-Critic Methods-1610.01945.json",
-    #          "./papers/A Neural Conversational Model-1506.05869.json",
-    #          "./papers/Krylov Subspace Descent for Deep Learning-1111.4259.json",
-    #          "./papers/Adversarial Evaluation of Dialogue Models-1701.08198.json",
-            # ]
+    
     create_basic_chunks(files)
 
     question = 'In a single sentence, tell me about AlphaStar.'
 
-    search_results = neo4j_vector_search(question)
+    # search_results = neo4j_vector_search(question)
 
-    print(search_results[0])
+    # print(search_results[0])
 
-    prettychain(question)
+    # prettychain(question)
 
-    prettychain("""
-        Tell me about Apple.
-        Limit your answer to a single sentence.
-        If you are unsure about the answer, say you don't know.
-    """)
+    # prettychain("""
+    #     Tell me about Apple.
+    #     Limit your answer to a single sentence.
+    #     If you are unsure about the answer, say you don't know.
+    # """)

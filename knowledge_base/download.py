@@ -2,7 +2,7 @@ import os
 import re
 
 from knowledge_base.arxiv_paper import Arxiv
-from find import find_paper_by_title, search_by_author
+from knowledge_base.find import find_paper_by_title, search_by_author
 from utils.logger import logger
 from collections import deque
 
@@ -14,12 +14,12 @@ def download_paper(paper_id: str, save_path: str = "./papers"):
         os.makedirs(save_path)
 
     try:
-        logger.info(f"Loading '{paper_id}'")
+        logger.debug(f"Loading '{paper_id}'")
         paper = Arxiv(paper_id)
         paper.load(save=False)
-        logger.info(f"Getting references for paper '{paper.title}'")
+        logger.debug(f"Getting references for paper '{paper.title}'")
         refs = paper.get_refs()
-        logger.info(f"Found {len(refs)} references")
+        logger.debug(f"Found {len(refs)} references")
         paper.save()
     except Exception as e:
         logger.error(f"Failed to download paper '{paper_id}': {e}")
@@ -27,11 +27,12 @@ def download_paper(paper_id: str, save_path: str = "./papers"):
     return paper
 
 
-def download_papers_by_id(paper_ids, download_references=True, max_papers=100):
+def download_papers_by_id(paper_ids, download_references=True, max_depth=1, max_papers=1000):
     paper_queue = deque(paper_ids)  # Initialize the queue with the initial paper IDs
     seen = set()  # Use a set for faster lookup
     downloaded_papers = 0
-
+    files = []
+    depth = 0
     while paper_queue and downloaded_papers < max_papers:
         current_paper_id = paper_queue.popleft()  # Get the next paper ID from the queue
         if current_paper_id in seen:
@@ -41,9 +42,14 @@ def download_papers_by_id(paper_ids, download_references=True, max_papers=100):
         paper = download_paper(current_paper_id)
         downloaded_papers += 1
 
+        files.append(f"{paper.file_path}.json")
         # Add new references to the queue without exceeding the max_papers limit
-        if download_references and downloaded_papers < max_papers:
+        if download_references and depth < max_depth and downloaded_papers < max_papers:
+            depth += 1
             paper_queue.extend(map(lambda ref: ref['id'], paper.references))
+
+    return files
+
 
 def get_arxiv_id(string):
     res = string.split('/')[-1]

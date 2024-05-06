@@ -16,12 +16,13 @@
             "justMyCode": true
         },
         {
-            "name": "Ingest papers",
+            "name": "Add papers prod",
             "type": "python",
             "request": "launch",
-            "program": "knowledge_graph/ingest_papers.py",
+            "program": "add_papers.py",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "ENV": "prod"
             },
             "console": "integratedTerminal",
             "justMyCode": true
@@ -32,6 +33,9 @@
             "request": "launch",
             "program": "app.py",
             "console": "integratedTerminal",
+            "env": {
+                "ENV": "dev"
+            },
             "justMyCode": true
         },
         {
