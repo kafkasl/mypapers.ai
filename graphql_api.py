@@ -9,48 +9,35 @@ query = QueryType()
 def resolve_get_all_data(*_):
     kg = init_kg()
     cypher = """
-            MATCH (a:Author)-[r:AUTHOR_OF]->(p:Paper)
-            RETURN p AS paper, r AS link, a AS author
-            """
+    MATCH (p:Paper)
+    OPTIONAL MATCH (ref:Paper)-[:REFERENCES]->(p)
+    WITH p, COUNT(ref) AS incomingReferencesCount
+    OPTIONAL MATCH (p)-[:REFERENCES]->(outRef:Paper)
+    RETURN p AS paper, collect(outRef) AS references, incomingReferencesCount
+    """
     results = kg.query(cypher)
-    authors = []
     papers = []
+    authors = set()
     links = []
-    seen_authors = set()
-    seen_papers = set()
 
     for record in results:
         paper = record['paper']
-        link = record['link']
-        author = record['author']
+        paper_node = {
+            "id": paper['arxiv_id'],
+            "title": paper['title'],
+            "publicationDate": paper['published'],
+            "summary": paper['summary'],
+            "authors": paper['authors'],
+            "references": [ref['arxiv_id'] for ref in record['references']],
+            "incomingReferencesCount": record['incomingReferencesCount'],
+            "source": paper['source']
+        }
+        papers.append(paper_node)
+        authors.update(paper_node['authors'])
+        links.extend([{"source": author, "target": paper_node['id'], "type": "author_of"} for author in paper_node['authors']])
+        links.extend([{"source": paper_node['id'], "target": ref, "type": "references"} for ref in paper_node['references']])
 
-        if paper['arxiv_id'] not in seen_papers:
-            paper_node = {
-                "id": paper['arxiv_id'],
-                "title": paper['title'],
-                "type": "paper",
-                "publicationDate": paper['published'],
-                "summary": paper['summary'] if 'summary' in paper else "",
-                "link": paper['source']
-            }
-            papers.append(paper_node)
-            seen_papers.add(paper['arxiv_id'])
-
-        if author['name'] not in seen_authors:
-            author_node = {
-                "id": author['name'],
-                "name": author['name'],
-                "type": "author"
-            }
-            authors.append(author_node)
-            seen_authors.add(author['name'])
-
-        links.append({
-            "source": author['name'],
-            "target": paper['arxiv_id'],
-            "type": "author_of",
-        })
-
+    authors = [{"id": a, "name": a} for a in authors]
     return {"papers": papers, "authors": authors, "links": links}
 
 

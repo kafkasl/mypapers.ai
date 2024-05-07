@@ -76,9 +76,9 @@
                 body: JSON.stringify({
                     query: `{
                         getAllData {
-                            papers { id title publicationDate summary link }
+                            papers { id title publicationDate summary incomingReferencesCount references { id } source }
                             authors { id name }
-                            links { source target }
+                            links { source target type }
                         }
                     }`
                 })
@@ -100,17 +100,32 @@
 
         function processGraphData(data) {
             const elements = [];
-            data.papers.forEach(paper => {
-                elements.push({ data: { id: paper.id, label: paper.title, type: 'paper', publicationDate: paper.publicationDate, summary: paper.summary, link: paper.link } });
-            });
+            const visiblePapers = new Set();
+            const minReferences = 2;
 
-            data.authors.forEach(author => {
-                elements.push({ data: { id: author.id, label: author.name, type: 'author' } });
+            console.log('typeof papers ', typeof(data.papers));
+            data.papers.forEach(paper => {
+                // print debug
+                // console.log(paper.id, paper.title, paper.incomingReferencesCount);
+                if (paper.incomingReferencesCount >= minReferences) {
+                    elements.push({ data: { id: paper.id, label: paper.title, type: 'paper', publicationDate:
+                     paper.publicationDate,
+                      summary: paper.summary, source: paper.source, incomingReferencesCount: paper.incomingReferencesCount} });
+                    visiblePapers.add(paper.id);
+                }
             });
 
             data.links.forEach(link => {
-                elements.push({ data: { source: link.source, target: link.target, label: 'authored by' } });
+                if (link.type !== 'author_of' && visiblePapers.has(link.source) && visiblePapers.has(link.target)) {
+                    elements.push({ data: { source: link.source, target: link.target, label: link.type } });
+                }
             });
+
+            // data.authors.forEach(author => {
+            //     elements.push({ data: { label: author.name, type: 'author' } });
+            // });
+
+
 
             return elements;
         }
@@ -126,19 +141,33 @@
                     {
                         selector: 'node',
                         style: {
-                            'label': 'data(label)',
+                            // 'label': 'data(label)',
                             'text-valign': 'center',
                             'text-outline-width': 2,
                             'text-outline-color': 'white',
                             'font-size': '12px',
                             'text-wrap': 'ellipsis',
-                            'text-max-width': '80px'
+                            'text-max-width': '60px'
                         }
                     },
                     {
                         selector: 'node[type="paper"]',
                         style: {
+                            'label': function(node) {
+                                var count = node.data('incomingReferencesCount');
+                                if (count >= 10) {
+                                    return node.data('label');
+                                } else {
+                                    return '';
+                                }
+                            },
                             'background-color': '#003366',
+                            'width': function(node) {
+                                return node.data('incomingReferencesCount'); // Adjust size factor as needed
+                            },
+                            'height': function(node) {
+                                return node.data('incomingReferencesCount'); // Adjust size factor as needed
+                            }
 
                         }
                     },
@@ -160,26 +189,16 @@
                     }
                 ],
                 layout: {
-                    // name: 'cose',
-                    // nodeDimensionsIncludeLabels: true, // Whether to include labels in node dimensions. Useful for avoiding label overlap
                     name: 'fcose',
-                    // // Some of the options for cose-bilkent layout
-                    nodeDimensionsIncludeLabels: true, // Whether to include labels in node dimensions. Useful for avoiding label overlap
-                    // refresh: 20, // Number of iterations between consecutive screen positions update (higher -> less updates, less jerky)
-                    // fit: true, // Whether to fit the network view after when done
-                    // padding: 30, // Padding on fit
-                    // randomize: true, // Randomize the initial positions of the nodes (true for distinct results)
-                    // nodeRepulsion: 4500, // Node repulsion (non overlapping) multiplier
-                    // idealEdgeLength: 50, // Ideal edge (non nested) length
-                    // edgeElasticity: 0.45, // Divisor to compute edge forces
-                    // nestingFactor: 0.1, // Nesting factor (multiplier) to compute ideal edge length for nested edges
-                    // gravity: 0.25, // Gravity force (constant)
-                    // numIter: 2500, // Maximum number of iterations to perform
-                    // tile: true, // Whether to tile disconnected nodes
-                    // animate: 'end', // Type of layout animation. The option set is {'during', 'end', false}
-            
-                    // name: 'cola',
-                    // infinte: true
+                    nodeDimensionsIncludeLabels: true,
+                    nodeRepulsion: 10000,
+                    idealEdgeLength: 50,
+                    edgeElasticity: 0.45,
+                    nestingFactor: 0.1,
+                    gravity: 0.25,
+                    numIter: 2500,
+                    tile: true,
+                    animate: 'end',
                 }
             });
 
@@ -193,7 +212,7 @@
                 var node = evt.target;
                 var nodeType = node.data('type');
                 var infoContent = '';
-                const arxivLink = node.data('link');
+                const arxivLink = node.data('source');
                 const paperId = arxivLink.match(/(\d+\.\d+)/)[0];
                 const talkLink = `https://talk2arxiv.org/pdf/${paperId}.pdf`;
 
@@ -204,7 +223,7 @@
                         <p class="text-gray-700 mb-2"><strong>Title:</strong> ${node.data('label')}</p>
                         <p class="text-gray-700 mb-2"><strong>Publication Date:</strong> ${formatDate(node.data('publicationDate'))}</p>
                         <p class="text-gray-700 mb-2"><strong>Summary:</strong> ${node.data('summary')}</p>
-                        <p class="text-gray-700 mb-2"><strong>Link:</strong><a target="_blank" rel="noopener noreferrer" href="${node.data('link')}" class="text-blue-500 hover:text-blue-700"> Read paper</a>, <a href="${talkLink}" class="text-blue-500 hover:text-blue-700" target="_blank" rel="noopener noreferrer">Talk to the paper</a></p>
+                        <p class="text-gray-700 mb-2"><strong>Link:</strong><a target="_blank" rel="noopener noreferrer" href="${arxivLink}" class="text-blue-500 hover:text-blue-700"> Read paper</a>, <a href="${talkLink}" class="text-blue-500 hover:text-blue-700" target="_blank" rel="noopener noreferrer">Talk to the paper</a></p>
                     `;
                 } else if (nodeType === 'author') {
                     infoContent = `

@@ -13,15 +13,15 @@ type Paper {
   title: String
   publicationDate: String
   summary: String
-  authors: [Author]
-  type: String
+  references: [Paper]
+  incomingReferencesCount: Int
+  source: String
 }
 
 type Author {
   id: String
   name: String
   papers: [Paper]
-  type: String
 }
 
 type Link {
