@@ -65,7 +65,7 @@ def resolve_get_papers_by_date(_, info, date='20240425'):
     kg = init_kg()
     cypher = f"""
     MATCH (p:Paper)
-    MATCH (ref:Paper  {{published: '{date}'}})-[:REFERENCES]->(p)
+    OPTIONAL MATCH (ref:Paper  {{published: '{date}'}})-[:REFERENCES]->(p)
     WITH p, COUNT(ref) AS incomingReferencesCount
     OPTIONAL MATCH (p)-[:REFERENCES]->(outRef:Paper)
     RETURN p AS paper, collect(outRef) AS references, incomingReferencesCount

@@ -61,6 +61,9 @@
             </div>
         </div>
     </div>
+    <div id="dateInfo" class="fixed bottom-0 left-0 p-4 text-gray-700">
+        <!-- Content will be set by JavaScript -->
+    </div>
     </div>
     <script>
 
@@ -70,7 +73,11 @@
         let maxIncomingReferences = 0;
         const nodeScalingFactor = 20;
         const labelPercentile = 0.50;
-        
+        const byDate = true;
+        const today = new Date();
+        const yesterday = new Date(today.setDate(today.getDate() - 2));
+        const formattedDate = yesterday.toISOString().split('T')[0].replace(/-/g, '');
+
         const layoutOptions = {
                     name: 'fcose',
                     nodeDimensionsIncludeLabels: true,
@@ -85,10 +92,6 @@
                 };
 
         async function fetchData() {
-            const byDate = true;
-            const today = new Date();
-            const yesterday = new Date(today.setDate(today.getDate() - 2));
-            const formattedDate = yesterday.toISOString().split('T')[0].replace(/-/g, '');
             if (byDate) {
                 body = JSON.stringify({
                     query: `{
@@ -350,6 +353,14 @@
             document.getElementById('toggleAuthors').addEventListener('click', function() {
                 toggleVisibility('author');
             });
+
+            // Set the date info content
+            const dateInfoDiv = document.getElementById('dateInfo');
+            if (byDate) {
+                dateInfoDiv.textContent = `Displaying papers from ${formatDate(formattedDate)} and their references`;
+            } else {
+                dateInfoDiv.textContent = "Displaying all papers";
+            }
         }
 
 
@@ -373,6 +384,7 @@
     <!-- end olark code -->
 </body>
 
+</html>
 </html>
 </html>
 </html>
