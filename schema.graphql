@@ -1,11 +1,10 @@
 type Query {
   getAllData: GraphData
+  getPapersByDate(date: String): GraphData
 }
 
 type GraphData {
   papers: [Paper]
-  authors: [Author]
-  links: [Link]
 }
 
 type Paper {
@@ -13,7 +12,8 @@ type Paper {
   title: String
   publicationDate: String
   summary: String
-  references: [Paper]
+  references: [String]
+  authors: [String]
   incomingReferencesCount: Int
   source: String
 }
