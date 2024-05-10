@@ -25,27 +25,26 @@ def process_paper_record(paper, references=None, incomingReferencesCount=None):
     return paper_node
 
 def process_query_results(results):
-    papers = []
+    papers_dict = {}
 
-    for i, record in enumerate(results):
-        # pretty print record dictionary
-        if i == 0:
-            print(json.dumps(record, indent=4))
-
+    for record in results:
         # Process main paper with its references and incoming references count
         paper_node = process_paper_record(
             record['paper'],
             record['references'],
             record['incomingReferencesCount'])
-        
-        print('paper_node', paper_node['incomingReferencesCount'])
-        papers.append(paper_node)
 
-        references = [process_paper_record(ref) for ref in record['references']]
-        papers.extend(references)
+        # Always overwrite the paper node because it is always richer
+        papers_dict[paper_node['id']] = paper_node
 
+        # Process each reference and add to dictionary, avoiding duplicates
+        for ref in record['references']:
+            ref_node = process_paper_record(ref)
+            # Only add if not already present to avoid overwriting richer data
+            if ref_node['id'] not in papers_dict:
+                papers_dict[ref_node['id']] = ref_node
 
-    return {"papers": papers}
+    return {"papers": list(papers_dict.values())}
 
 @query.field("getAllData")
 def resolve_get_all_data(*_):
@@ -62,15 +61,18 @@ def resolve_get_all_data(*_):
 
 @query.field("getPapersByDate")
 def resolve_get_papers_by_date(_, info, date='20240425'):
+    print('Resolving papers by date', date)
     kg = init_kg()
     cypher = f"""
-    MATCH (p:Paper {{published: '{date}'}})
-    OPTIONAL MATCH (ref:Paper)-[:REFERENCES]->(p)
+    MATCH (p:Paper)
+    MATCH (ref:Paper  {{published: '{date}'}})-[:REFERENCES]->(p)
     WITH p, COUNT(ref) AS incomingReferencesCount
     OPTIONAL MATCH (p)-[:REFERENCES]->(outRef:Paper)
     RETURN p AS paper, collect(outRef) AS references, incomingReferencesCount
     """
+    print('Cypher query:', cypher)
     results = kg.query(cypher)
+    # print('Results:', results)
     return process_query_results(results)
 
 # Create executable schema

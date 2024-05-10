@@ -45,7 +45,7 @@
         <div id="info" class="p-4 bg-white shadow-lg rounded-lg mb-4">
             Click on a node to see more information here.
         </div>
-        <div class="toggle-buttons">
+        <div class="toggle-buttons" style="display: none;">
             <button id="togglePapers" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Toggle Papers</button>
             <button id="toggleAuthors" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Toggle Authors</button>
         </div>
@@ -66,24 +66,58 @@
 
         const API_URL = "{{ api_url }}";
         console.log(API_URL);
+
+        let maxIncomingReferences = 0;
+        const nodeScalingFactor = 20;
+        const labelPercentile = 0.50;
         
+        const layoutOptions = {
+                    name: 'fcose',
+                    nodeDimensionsIncludeLabels: true,
+                    nodeRepulsion: 10000,
+                    idealEdgeLength: 100,
+                    edgeElasticity: 0.45,
+                    // nestingFactor: 0.1,
+                    // gravity: 0.25,
+                    // numIter: 2500,
+                    // tile: true,
+                    // animate: 'end',
+                };
+
         async function fetchData() {
+            const byDate = true;
+            const today = new Date();
+            const yesterday = new Date(today.setDate(today.getDate() - 2));
+            const formattedDate = yesterday.toISOString().split('T')[0].replace(/-/g, '');
+            if (byDate) {
+                body = JSON.stringify({
+                    query: `{
+                        getPapersByDate(date: "${formattedDate}") {
+                            papers { id title publicationDate summary incomingReferencesCount references authors source }
+                        }
+                    }`})
+            }  else {
+                body = JSON.stringify({
+                    query: `{
+                        getAllData {
+                            papers { id title publicationDate summary incomingReferencesCount references authors source }
+                        }
+                    }`
+                })
+            }
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    query: `{
-                        getAllData {
-                            papers { id title publicationDate summary incomingReferencesCount references source }
-
-                        }
-                    }`
-                })
+                body: body
             });
             const data = await response.json();
-            return data.data.getAllData;
+            if (byDate) {
+                return data.data.getPapersByDate;
+            } else {
+                return data.data.getAllData;
+            }
         }
 
         function formatDate(dateStr) {
@@ -98,33 +132,103 @@
 
 
         function processGraphData(data) {
-            const elements = [];
+            const elements = []; 
             const visiblePapers = new Set();
-            const minReferences = 2;
-
-            console.log('typeof papers ', typeof(data.papers));
-            data.papers.forEach(paper => {
-                // print debug
-                // console.log(paper.id, paper.title, paper.incomingReferencesCount);
-                if (paper.incomingReferencesCount >= minReferences) {
-                    elements.push({ data: { id: paper.id, label: paper.title, type: 'paper', publicationDate:
-                     paper.publicationDate,
-                      summary: paper.summary, source: paper.source, incomingReferencesCount: paper.incomingReferencesCount} });
-                    visiblePapers.add(paper.id);
-                }
-            });
-
-            // data.links.forEach(link => {
-            //     if (link.type !== 'author_of' && visiblePapers.has(link.source) && visiblePapers.has(link.target)) {
-            //         elements.push({ data: { source: link.source, target: link.target, label: link.type } });
+            const minReferences = 0;
+            const showAuthors = false;
+            // console.log('typeof papers ', typeof(data.papers));
+            // data.papers.forEach(paper => {
+            //     // print debug
+            //     // console.log(paper.id, paper.title, paper.incomingReferencesCount);
+            //     if (paper.incomingReferencesCount >= minReferences) {
+            //         elements.push({ 
+            //             data: { 
+            //                 id: paper.id, 
+            //                 label: paper.title, 
+            //                 type: 'paper', 
+            //                 publicationDate: paper.publicationDate,
+            //                 summary: paper.summary,
+            //                 source: paper.source,
+            //                 incomingReferencesCount: paper.incomingReferencesCount 
+            //             }
+            //         });
+            //         // visiblePapers.add(paper.id);
             //     }
             // });
 
-            // data.authors.forEach(author => {
-            //     elements.push({ data: { label: author.name, type: 'author' } });
-            // });
+            console.log(data.papers);
+            // Step 1: Render all papers as nodes
+            data.papers.forEach(paper => {
+                if (paper.incomingReferencesCount > maxIncomingReferences) {
+                    maxIncomingReferences = paper.incomingReferencesCount;
+                }
+                elements.push({
+                    data: {
+                        id: paper.id,
+                        label: paper.title,
+                        type: 'paper',
+                        publicationDate: paper.publicationDate,
+                        summary: paper.summary,
+                        source: paper.source,
+                        incomingReferencesCount: paper.incomingReferencesCount,
+                    }
+                });
+            });
 
+            console.log('maxIncomingReferences', maxIncomingReferences);
 
+            
+
+            if (showAuthors) {
+                // Step 2: Render all authors as nodes
+                const authorSet = new Set(); // To avoid duplicate author nodes
+                data.papers.forEach(paper => {
+                    paper.authors.forEach(author => {
+                        const authorId = 'author-' + author.replace(/\s+/g, '-');
+                        if (!authorSet.has(authorId)) {
+                            elements.push({
+                                data: {
+                                    id: authorId,
+                                    label: author,
+                                    type: 'author'
+                                }
+                            });
+                            authorSet.add(authorId);
+                        }
+                    });
+                });
+            }
+
+            // Step 3: Render all the reference edges and authorship edges
+            data.papers.forEach(paper => {
+                // Reference edges
+                // if references is null continue
+                if (paper.references) {  
+                    paper.references.forEach(refId => {
+                        elements.push({
+                            data: {
+                                source: paper.id,
+                                target: refId,
+                                label: 'references'
+                            }
+                        });
+                    });
+                }
+
+                // Authorship edges
+                if (showAuthors) {
+                    paper.authors.forEach(author => {
+                        const authorId = 'author-' + author.replace(/\s+/g, '-');
+                        elements.push({
+                            data: {
+                                source: authorId,
+                                target: paper.id,
+                                label: 'author_of'
+                            }
+                        });
+                    });
+                }
+            });
 
             return elements;
         }
@@ -140,7 +244,6 @@
                     {
                         selector: 'node',
                         style: {
-                            // 'label': 'data(label)',
                             'text-valign': 'center',
                             'text-outline-width': 2,
                             'text-outline-color': 'white',
@@ -148,13 +251,11 @@
                             'text-wrap': 'ellipsis',
                             'text-max-width': '60px'
                         }
-                    },
-                    {
+                    },{
                         selector: 'node[type="paper"]',
                         style: {
                             'label': function(node) {
-                                var count = node.data('incomingReferencesCount');
-                                if (count >= 10) {
+                                if (node.data('incomingReferencesCount')/maxIncomingReferences >= labelPercentile) {
                                     return node.data('label');
                                 } else {
                                     return '';
@@ -162,11 +263,14 @@
                             },
                             'background-color': '#003366',
                             'width': function(node) {
-                                return node.data('incomingReferencesCount'); // Adjust size factor as needed
+                                return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
                             },
                             'height': function(node) {
-                                return node.data('incomingReferencesCount'); // Adjust size factor as needed
-                            }
+                                return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
+                            },
+                            // 'opacity': function(node) {
+                            //     return node.data('incomingReferencesCount') / maxIncomingReferences;
+                            // }
 
                         }
                     },
@@ -174,6 +278,7 @@
                         selector: 'node[type="author"]',
                         style: {
                             'background-color': '#89CFF0',
+                            'display': 'none'
                         }
                     },
                     {
@@ -183,22 +288,17 @@
                             'width': 1,
                             'line-color': '#D3D3D3',
                             'target-arrow-color': '#D3D3D3',
-                            'arrow-scale': 0.5
+                            'arrow-scale': 0.5,
+                            // 'opacity': function(edge) {
+                            //     var sourceNode = edge.source();
+                            //     var targetNode = edge.target();
+                            //     var maxDegree =  sourceNode.data('incomingReferencesCount') +   targetNode.data('incomingReferencesCount');
+                            //     return Math.max(0.5, maxDegree / maxIncomingReferences);
+                            // }
                         }
                     }
                 ],
-                layout: {
-                    name: 'fcose',
-                    nodeDimensionsIncludeLabels: true,
-                    nodeRepulsion: 10000,
-                    idealEdgeLength: 50,
-                    edgeElasticity: 0.45,
-                    nestingFactor: 0.1,
-                    gravity: 0.25,
-                    numIter: 2500,
-                    tile: true,
-                    animate: 'end',
-                }
+                layout: layoutOptions
             });
 
             cy.fit();
@@ -239,6 +339,7 @@
                 nodes.forEach(node => {
                     node.style('display', node.style('display') === 'none' ? 'element' : 'none');
                 });
+                cy.layout(layoutOptions).run();
                 cy.fit();
 
             }
@@ -272,4 +373,6 @@
     <!-- end olark code -->
 </body>
 
+</html>
+</html>
 </html>
