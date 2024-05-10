@@ -76,9 +76,8 @@
                 body: JSON.stringify({
                     query: `{
                         getAllData {
-                            papers { id title publicationDate summary incomingReferencesCount references { id } source }
-                            authors { id name }
-                            links { source target type }
+                            papers { id title publicationDate summary incomingReferencesCount references source }
+
                         }
                     }`
                 })
@@ -115,11 +114,11 @@
                 }
             });
 
-            data.links.forEach(link => {
-                if (link.type !== 'author_of' && visiblePapers.has(link.source) && visiblePapers.has(link.target)) {
-                    elements.push({ data: { source: link.source, target: link.target, label: link.type } });
-                }
-            });
+            // data.links.forEach(link => {
+            //     if (link.type !== 'author_of' && visiblePapers.has(link.source) && visiblePapers.has(link.target)) {
+            //         elements.push({ data: { source: link.source, target: link.target, label: link.type } });
+            //     }
+            // });
 
             // data.authors.forEach(author => {
             //     elements.push({ data: { label: author.name, type: 'author' } });
