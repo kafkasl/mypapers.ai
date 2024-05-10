@@ -56,5 +56,5 @@ def add_papers(target_date=None):
 if __name__ == "__main__":
     # add yesterday's papers
     yesterday = date.today() - timedelta(days=1)
-    specific_date = date(2024, 05, 08)
+    specific_date = date(2024, 5, 8)
     add_papers(target_date=yesterday)
