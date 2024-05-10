@@ -16,7 +16,7 @@ def add_papers(target_date=None):
     added = 0
     for paper in get_category_papers(category=category, max_results=1000):
         paper_id = get_arxiv_id(paper.entry_id)
-        if paper_exists(paper_id) and paper_id != '2405.05254':
+        if paper_exists(paper_id):
             continue
 
         pub_date = paper.published.date()
@@ -56,4 +56,5 @@ def add_papers(target_date=None):
 if __name__ == "__main__":
     # add yesterday's papers
     yesterday = date.today() - timedelta(days=1)
+    specific_date = date(2024, 05, 08)
     add_papers(target_date=yesterday)
