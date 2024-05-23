@@ -23,6 +23,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
 
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    
 </head>
 
 <body class="bg-white text-gray-900 flex h-screen">
@@ -79,17 +80,55 @@
         const formattedDate = yesterday.toISOString().split('T')[0].replace(/-/g, '');
 
         const layoutOptions = {
-                    name: 'fcose',
-                    nodeDimensionsIncludeLabels: true,
-                    nodeRepulsion: 10000,
-                    idealEdgeLength: 100,
-                    edgeElasticity: 0.45,
-                    // nestingFactor: 0.1,
-                    // gravity: 0.25,
-                    // numIter: 2500,
-                    // tile: true,
-                    // animate: 'end',
-                };
+            name: 'fcose',
+            nodeDimensionsIncludeLabels: true,
+            nodeRepulsion: 10000,
+            idealEdgeLength: 100,
+            edgeElasticity: 0.45,
+            // nestingFactor: 0.1,
+            // gravity: 0.25,
+            // numIter: 2500,
+            // tile: true,
+            // animate: 'end',
+        };
+
+        function setDateInfoContent(dateSelector) {
+            const dateInfoDiv = document.getElementById('dateInfo');
+            dateInfoDiv.innerHTML = ''; // Clear existing content
+
+            // Create and append the "papers" span
+            const p1 = document.createElement('span');
+            p1.textContent = 'Displaying ';
+            dateInfoDiv.appendChild(p1);
+            
+            const p2 = document.createElement('span');
+            p2.textContent = 'papers ';
+            p2.style.color = '#8B0000'; // Red color
+            p2.style.fontWeight = 'bold';
+            dateInfoDiv.appendChild(p2);
+            
+            const p3 = document.createElement('span');
+            p3.textContent = 'from ';
+            dateInfoDiv.appendChild(p3);
+
+            // Append the date selector
+            dateInfoDiv.appendChild(dateSelector);
+
+            // Create and append the "references" span
+            const r1 = document.createElement('span');
+            r1.textContent = ' and their ';
+            dateInfoDiv.appendChild(r1);
+            const r2 = document.createElement('span');
+            r2.textContent = 'references';
+            r2.style.color = '#0000FF'; // Blue color
+            r2.style.fontWeight = 'bold';
+            dateInfoDiv.appendChild(r2);
+
+            // Create and append the additional info span
+            // const additionalInfoSpan = document.createElement('span');
+            // additionalInfoSpan.textContent = ' (references are scaled by degree';
+            // dateInfoDiv.appendChild(additionalInfoSpan);
+        }
 
         async function fetchData() {
             if (byDate) {
@@ -139,27 +178,8 @@
             const visiblePapers = new Set();
             const minReferences = 0;
             const showAuthors = false;
-            // console.log('typeof papers ', typeof(data.papers));
-            // data.papers.forEach(paper => {
-            //     // print debug
-            //     // console.log(paper.id, paper.title, paper.incomingReferencesCount);
-            //     if (paper.incomingReferencesCount >= minReferences) {
-            //         elements.push({ 
-            //             data: { 
-            //                 id: paper.id, 
-            //                 label: paper.title, 
-            //                 type: 'paper', 
-            //                 publicationDate: paper.publicationDate,
-            //                 summary: paper.summary,
-            //                 source: paper.source,
-            //                 incomingReferencesCount: paper.incomingReferencesCount 
-            //             }
-            //         });
-            //         // visiblePapers.add(paper.id);
-            //     }
-            // });
 
-            console.log(data.papers);
+
             // Step 1: Render all papers as nodes
             data.papers.forEach(paper => {
                 if (paper.incomingReferencesCount > maxIncomingReferences) {
@@ -177,9 +197,6 @@
                     }
                 });
             });
-
-            console.log('maxIncomingReferences', maxIncomingReferences);
-
             
 
             if (showAuthors) {
@@ -236,10 +253,77 @@
             return elements;
         }
 
-        async function initializeGraph() {
-            const data = await fetchData();
-            const elements = processGraphData(data);
+        async function fetchAvailableDates() {
+            const query = `{
+                getAvailableDates
+            }`;
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+            const { data } = await response.json();
+            return data.getAvailableDates;
+        }
 
+
+        async function fetchDataByDate(date) {
+            const query = `{
+                getPapersByDate(date: "${date}") {
+                    papers { id title publicationDate summary incomingReferencesCount references authors source }
+                }
+            }`;
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+            const data = await response.json();
+            return data.data.getPapersByDate;
+        }
+
+        async function initializeGraph() {
+            const availableDates = await fetchAvailableDates();
+            const dateInfoDiv = document.getElementById('dateInfo');
+            const select = document.createElement('select');
+            select.id = 'dateSelector';
+            select.classList.add('bg-blue-500', 'text-white', 'font-bold', 'py-1', 'px-2', 'rounded', 'cursor-pointer', 'hover:bg-blue-700', 'transition', 'duration-300', 'ease-in-out', 'mx-2', 'w-38');
+
+            availableDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formatDate(date);
+                select.appendChild(option);
+            });
+
+            // Set the first date as the default selected value and update the display text
+            select.value = availableDates[0];
+            setDateInfoContent(select); 
+
+            // Fetch data for the selected date
+            const formattedDate = select.value.replace(/-/g, '');
+            const data = await fetchDataByDate(formattedDate);
+            const elements = processGraphData(data);
+            renderGraph(elements, formattedDate);
+
+            // Add event listener to handle date changes
+            select.addEventListener('change', async (event) => {
+                const newDate = event.target.value.replace(/-/g, '');
+                const newData = await fetchDataByDate(newDate);
+                const newElements = processGraphData(newData);
+                renderGraph(newElements, newDate);
+                setDateInfoContent(select);
+
+            });
+        }
+
+
+
+        async function renderGraph(elements, selectedDate) {
             var cy = cytoscape({
                 container: document.getElementById('cy'),
                 elements: elements,
@@ -248,7 +332,7 @@
                         selector: 'node',
                         style: {
                             'text-valign': 'center',
-                            'text-outline-width': 2,
+                            'text-outline-width': 0.5,
                             'text-outline-color': 'white',
                             'font-size': '12px',
                             'text-wrap': 'ellipsis',
@@ -258,21 +342,33 @@
                         selector: 'node[type="paper"]',
                         style: {
                             'label': function(node) {
-                                if (node.data('incomingReferencesCount')/maxIncomingReferences >= labelPercentile) {
+                                if (node.data('publicationDate') === selectedDate || node.data('incomingReferencesCount')/maxIncomingReferences >= labelPercentile) {
                                     return node.data('label');
                                 } else {
                                     return '';
                                 }
                             },
-                            'background-color': '#003366',
+                            'background-color': function(node) {
+                                return node.data('publicationDate') === selectedDate ? '#8B0000' : '#003366'; // Deep red for selected date, blue for others
+                            },
                             'width': function(node) {
-                                return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
+                                if (node.data('publicationDate') === selectedDate) {
+                                    return 10;
+                                } else {
+                                    return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
+                                }
                             },
                             'height': function(node) {
-                                return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
-                            },
+                                if (node.data('publicationDate') === selectedDate) {
+                                    return 10;
+                                } else {
+                                    return nodeScalingFactor * (node.data('incomingReferencesCount') / maxIncomingReferences);
+                                }
+                            }
+                            // },
                             // 'opacity': function(node) {
-                            //     return node.data('incomingReferencesCount') / maxIncomingReferences;
+                            //     if (node.data('publicationDate') === selectedDate) return 0.5
+                            //     return 1
                             // }
 
                         }
@@ -354,14 +450,8 @@
                 toggleVisibility('author');
             });
 
-            // Set the date info content
-            const dateInfoDiv = document.getElementById('dateInfo');
-            if (byDate) {
-                dateInfoDiv.textContent = `Displaying papers from ${formatDate(formattedDate)} and their references`;
-            } else {
-                dateInfoDiv.textContent = "Displaying all papers";
-            }
         }
+
 
 
         initializeGraph();
@@ -385,6 +475,4 @@
 </body>
 
 </html>
-</html>
-</html>
-</html>
+

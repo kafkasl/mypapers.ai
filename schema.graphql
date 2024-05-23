@@ -1,6 +1,7 @@
 type Query {
   getAllData: GraphData
   getPapersByDate(date: String): GraphData
+  getAvailableDates: [String]
 }
 
 type GraphData {

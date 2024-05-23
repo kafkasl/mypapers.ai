@@ -75,6 +75,20 @@ def resolve_get_papers_by_date(_, info, date='20240425'):
     # print('Results:', results)
     return process_query_results(results)
 
+@query.field("getAvailableDates")
+def resolve_get_available_dates(*_, min_papers=10):
+    kg = init_kg()  # Initialize or get your knowledge graph or database connection
+    cypher = f"""
+    MATCH (p:Paper)
+    WITH p.published AS availableDate, COUNT(p) AS paperCount
+    WHERE paperCount > {min_papers}
+    RETURN availableDate
+    ORDER BY availableDate DESC
+    """
+    results = kg.query(cypher)
+    dates = [record['availableDate'] for record in results]
+    return dates
+
 # Create executable schema
 schema = make_executable_schema(type_defs, query)
 
