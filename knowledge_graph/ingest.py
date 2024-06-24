@@ -6,17 +6,17 @@ import time
 
 
 def add_papers_to_graph(files):
-    start_time = time.time()
-    create_basic_chunks(files)
-    print("create_basic_chunks took:", time.time() - start_time, "seconds")
+    # start_time = time.time()
+    # create_basic_chunks(files)
+    # print("create_basic_chunks took:", time.time() - start_time, "seconds")
     
     start_time = time.time()
-    create_paper_nodes()
+    create_paper_nodes(files)
     print("create_paper_nodes took:", time.time() - start_time, "seconds")
     
-    start_time = time.time()
-    create_author_nodes()
-    print("create_author_nodes took:", time.time() - start_time, "seconds")
+    # start_time = time.time()
+    # create_author_nodes()
+    # print("create_author_nodes took:", time.time() - start_time, "seconds")
     
     start_time = time.time()
     create_reference_edges(files)
