@@ -24,6 +24,18 @@
 
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
     
+    <style>
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+            z-index: 49; /* Below the spinner but above everything else */
+            display: none; /* Hidden by default */
+        }
+    </style>
 </head>
 
 <body class="bg-white text-gray-900 flex h-screen">
@@ -36,7 +48,9 @@
             </path>
         </svg>
     </div>
-    <div id="cy" class="w-3/4 h-full"></div>
+    <div id="cy" class="w-3/4 h-full relative">
+        <div id="overlay"></div>
+    </div>
     <div class="absolute top-0 left-0 p-4">
         <h1 class="text-4xl font-bold mb-1 text-gray-900">mypapers.ai</h1>
         <h3 class="text-xl text-blue-500">alpha version</h3>
@@ -312,12 +326,15 @@
 
             // Add event listener to handle date changes
             select.addEventListener('change', async (event) => {
+                document.getElementById('loading').style.display = 'block'; // Show spinner
+                document.getElementById('overlay').style.display = 'block'; // Show overlay
                 const newDate = event.target.value.replace(/-/g, '');
                 const newData = await fetchDataByDate(newDate);
                 const newElements = processGraphData(newData);
                 renderGraph(newElements, newDate);
                 setDateInfoContent(select);
-
+                document.getElementById('loading').style.display = 'none'; // Hide spinner
+                document.getElementById('overlay').style.display = 'none'; // Hide overlay
             });
         }
 
