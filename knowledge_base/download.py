@@ -1,6 +1,9 @@
 import os
 import re
+import time
 
+from knowledge_graph.create_paper_nodes import create_paper_nodes
+from knowledge_graph.create_reference_edges import create_reference_edges
 from knowledge_base.arxiv_paper import Arxiv
 from knowledge_base.find import find_paper_by_title, search_by_author
 from utils.logger import logger
@@ -40,15 +43,24 @@ def download_papers_by_id(paper_ids, download_references=True, max_depth=1, max_
 
         seen.add(current_paper_id)
         paper = download_paper(current_paper_id)
+    
         downloaded_papers += 1
 
-        files.append(f"{paper.file_path}.json")
+        start_time = time.time()
+        file = f"{paper.file_path}.json"
+        files.append(file)
+        create_paper_nodes([file])
+        print("create_paper_nodes took:", time.time() - start_time, "seconds")
         # Add new references to the queue without exceeding the max_papers limit
         if download_references and depth < max_depth and downloaded_papers < max_papers:
             depth += 1
             paper_queue.extend(map(lambda ref: ref['id'], paper.references))
 
-    return files
+    start_time = time.time()
+    create_reference_edges(files)
+    print("create_reference_edges took:", time.time() - start_time, "seconds")
+
+    return downloaded_papers
 
 
 def get_arxiv_id(string):

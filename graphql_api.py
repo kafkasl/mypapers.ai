@@ -76,7 +76,7 @@ def resolve_get_papers_by_date(_, info, date='20240425'):
     return process_query_results(results)
 
 @query.field("getAvailableDates")
-def resolve_get_available_dates(*_, min_papers=10):
+def resolve_get_available_dates(*_, min_papers=1):
     kg = init_kg()  # Initialize or get your knowledge graph or database connection
     cypher = f"""
     MATCH (p:Paper)

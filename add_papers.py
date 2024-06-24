@@ -38,9 +38,9 @@ def add_papers(target_date=None):
         while retries > 0 and not done:
             try:
                 logger.info(f"Adding {paper_id}")
-                files = download_papers_by_id(paper_ids=[paper_id], download_references=True, max_depth=1)
-                add_papers_to_graph(files)
-                added += 1
+                added_papers = download_papers_by_id(paper_ids=[paper_id], download_references=True, max_depth=1)
+                # add_papers_to_graph(files)
+                added += added_papers
                 done = True
             except Exception as e:
                 logger.info(f"Error processing paper {paper_id}: {e}")
