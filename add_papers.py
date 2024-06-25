@@ -43,11 +43,11 @@ def add_papers(target_date=None):
                 added += added_papers
                 done = True
             except Exception as e:
-                logger.info(f"Error processing paper {paper_id}: {e}")
                 retries -= 1
+                logger.info(f"Exception, retrying: {paper_id}: {e}")
         if not done:
-            logger.info("Failed to process paper after retries, exiting.")
-            sys.exit(1)
+            logger.info(f"Failed to add paper {paper_id}")
+            
 
     logger.info(f"Added {added} papers to the graph for target date {target_date}")
 
